@@ -82,6 +82,16 @@ Redis, bellek içi (in-memory) çalışan bir veri yapıları sunucusudur. Proje
 
 Sanctum, Laravel'in hafif API authentication paketidir. Hem web uygulaması (cookie tabanlı) hem mobil uygulama (token tabanlı) için güvenli kimlik doğrulama sağlar. E-posta/şifre girişi ve Google OAuth desteği Sanctum üzerinden yönetilecektir.
 
+### 1.6 Laravel Reverb (WebSocket Sunucusu)
+**Rol:** Gerçek zamanlı çift yönlü iletişim
+
+Laravel Reverb, Laravel'in resmi birinci parti WebSocket sunucusudur. Geleneksel HTTP'nin "istek-yanıt" modelinin aksine, WebSocket ile sunucu ve istemci arasında kalıcı bir bağlantı kurulur. Bu sayede sunucu, yeni veri geldiğinde istemciye anında bildirim gönderebilir. Projemizde Binance'ten gelen anlık kripto fiyatları, portföy değer değişimleri ve fiyat alarm bildirimleri Reverb üzerinden gerçek zamanlı olarak kullanıcıya iletilecektir. Reverb, Docker Compose içinde ayrı bir konteyner olarak çalışacaktır.
+
+### 1.7 Laravel Echo (WebSocket İstemcisi)
+**Rol:** Frontend tarafında gerçek zamanlı veri dinleme
+
+Laravel Echo, Reverb WebSocket sunucusuna bağlanarak kanal (channel) bazlı gerçek zamanlı veri dinlemeyi sağlayan bir JavaScript kütüphanesidir. React bileşenleri içinde kullanılarak canlı fiyat ticker'ı, portföy değer güncellemesi ve bildirimler gibi anlık güncellemeler kullanıcı arayüzüne yansıtılır. Hem web (React) hem mobil (React Native) uygulamada kullanılabilir.
+
 ### 1.6 Google Gemini API (Ücretsiz Katman)
 **Rol:** Yapay zeka entegrasyonu
 
@@ -225,6 +235,7 @@ Projede çalışacak konteynerler:
 |---|---|---|
 | `api` | Laravel API (PHP 8.3) | 8000 |
 | `web` | React Web App (Vite) | 3000 |
+| `reverb` | Laravel Reverb (WebSocket) | 8080 |
 | `db` | PostgreSQL 16 | 5432 |
 | `redis` | Redis (cache + queue) | 6379 |
 | `mailpit` | Geliştirme e-posta sunucusu | 8025 |
@@ -253,10 +264,15 @@ Nginx, production ortamında React web uygulamasının statik dosyalarını sunm
 
 ## 6. Üçüncü Parti API'ler (Ücretsiz)
 
-### 6.1 Binance Public REST API
-**Rol:** Kripto para canlı fiyat verisi
+### 6.1 Binance REST + WebSocket API
+**Rol:** Kripto para canlı fiyat verisi (anlık)
 
-Binance'in herkese açık REST API'si, API anahtarı gerektirmeden anlık kripto para fiyatlarını sunar. Bitcoin, Ethereum ve diğer kripto varlıkların güncel fiyatları bu API üzerinden çekilecektir.
+Binance, API anahtarı gerektirmeden iki farklı erişim yöntemi sunar:
+
+- **REST API:** İlk yükleme ve geçmiş veri sorguları için kullanılır.
+- **WebSocket Stream:** Anlık fiyat değişimlerini milisaniye düzeyinde gerçek zamanlı olarak iletir. Kullanıcı uygulamayı açtığında kripto fiyatları canlı olarak ekranda güncellenir.
+
+Binance WebSocket → Laravel Backend → Reverb → React Frontend akışıyla kullanıcıya kesintisiz canlı piyasa deneyimi sunulacaktır.
 
 ### 6.2 Yahoo Finance API
 **Rol:** Hisse senedi ve döviz canlı fiyat verisi
@@ -335,10 +351,11 @@ Nginx ve Laravel middleware aracılığıyla aşağıdaki HTTP güvenlik başlı
 
 | Kategori | Adet |
 |---|---|
-| Backend | 6 (PHP, Laravel, PostgreSQL, Redis, Sanctum, Gemini) |
+| Backend | 8 (PHP, Laravel, PostgreSQL, Redis, Sanctum, Gemini, Reverb, Echo) |
 | Web Frontend | 11 (React, TypeScript, Vite, Tailwind, shadcn/ui, TanStack Query, Axios, Zod, Recharts, nivo, React Router) |
 | Mobil | 7 (React Native, Expo, Expo Router, NativeWind, Tamagui, Victory Native, SecureStore) |
+| Gerçek Zamanlı | 3 (Laravel Reverb, Laravel Echo, Binance WebSocket) |
 | Güvenlik | 11 (Sanctum, bcrypt, HTTPS/SSL, CSRF, XSS, SQL Injection Protection, Rate Limiting, CORS, SecureStore, Append-Only Ledger, Security Headers) |
 | Paylaşılan | 4 (TypeScript, Zod, TanStack Query, Axios) |
 | Altyapı | 6 (Docker, Docker Compose, Sail, Mailpit, GitHub, Nginx) |
-| Harici API | 2 (Binance, Yahoo Finance) |
+| Harici API | 2 (Binance REST+WebSocket, Yahoo Finance) |
