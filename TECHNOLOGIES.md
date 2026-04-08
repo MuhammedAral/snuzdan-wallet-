@@ -1,15 +1,16 @@
-# Snuz — Projede Kullanılacak Teknolojiler
+﻿# Snuzdan — Projede Kullanılacak Teknolojiler
 
-> **Proje:** Snuz — Kişisel Finans ve Yatırım Takip Uygulaması  
+> **Proje:** Snuzdan — Kişisel Finans ve Yatırım Takip Uygulaması  
 > **Tür:** Web Uygulaması + Mobil Uygulama (iOS & Android)  
-> **Ekip:** Muhammed Ali Aral, Akif  
+> **Ekip:** Muhammed Ali Aral, Akif Cebe
+
 > **Tarih:** Nisan 2026
 
 ---
 
 ## Genel Mimari Yaklaşım
 
-Snuz, tek bir backend API üzerinden hem web hem mobil platformlara hizmet veren **monorepo** mimarisiyle geliştirilecektir. Backend tamamen PHP (Laravel) ile yazılacak, web ve mobil frontendler ise React/TypeScript tabanlı olacaktır. Tüm geliştirme ortamı Docker üzerinde çalışacaktır.
+Snuzdan, tek bir backend API üzerinden hem web hem mobil platformlara hizmet veren **monorepo** mimarisiyle geliştirilecektir. Backend tamamen PHP (Laravel) ile yazılacak, web ve mobil frontendler ise React/TypeScript tabanlı olacaktır. Tüm geliştirme ortamı Docker üzerinde çalışacaktır.
 
 ```
                     ┌──────────────────┐
@@ -61,7 +62,7 @@ Laravel, PHP dünyasının en popüler ve kapsamlı framework'üdür. Projemizde
 ### 1.3 PostgreSQL 16
 **Rol:** İlişkisel veritabanı
 
-PostgreSQL, açık kaynak ilişkisel veritabanları arasında en güçlü ve güvenilir olanıdır. Snuz'un finansal defter (ledger) mimarisi için tercih edilme sebepleri:
+PostgreSQL, açık kaynak ilişkisel veritabanları arasında en güçlü ve güvenilir olanıdır. Snuzdan'un finansal defter (ledger) mimarisi için tercih edilme sebepleri:
 
 - **CHECK constraint desteği:** Append-only (salt-ekleme) kurallarını veritabanı seviyesinde zorlar; yanlışlıkla veri silinmesini veya değiştirilmesini engeller.
 - **VIEW desteği:** Portföy pozisyonları ve kâr/zarar hesaplamalarını hesaplanan görünümler (computed views) olarak tanımlar; veri saklamadan gerçek zamanlı sonuç üretir.
@@ -283,7 +284,7 @@ Yahoo Finance, hisse senedi (AAPL, TSLA vb.) ve döviz çifti (EUR/USD, USD/TRY 
 
 ## 7. Güvenlik Teknolojileri ve Önlemleri
 
-Finansal verilerin korunması uygulamanın en kritik gereksinimlerinden biridir. Snuz, çok katmanlı bir güvenlik mimarisi ile kullanıcı verilerini koruma altına alacaktır.
+Finansal verilerin korunması uygulamanın en kritik gereksinimlerinden biridir. Snuzdan, çok katmanlı bir güvenlik mimarisi ile kullanıcı verilerini koruma altına alacaktır.
 
 ### 7.1 Laravel Sanctum (Kimlik Doğrulama)
 **Rol:** Token tabanlı API kimlik doğrulama

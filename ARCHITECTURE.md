@@ -1,4 +1,4 @@
-# Snuz — Foundational Architecture (v2)
+﻿# Snuzdan — Foundational Architecture (v2)
 
 > Personal Finance & Investment Tracking Web App  
 > School Project · Zero Budget · Append-Only Ledger  
@@ -63,7 +63,7 @@
 
 ```sql
 -- ============================================================
--- SNUZ DATABASE SCHEMA v2
+-- SNUZDAN DATABASE SCHEMA v2
 -- Append-Only Ledger · Laravel + Eloquent
 -- PostgreSQL 16+
 -- ============================================================
@@ -344,7 +344,7 @@ INSERT INTO categories (name, icon, color, direction, cat_type) VALUES
 ### Folder Structure
 
 ```
-snuz/
+snuzdan/
 ├── docker-compose.yml              # Laravel Sail (PostgreSQL, Redis, Mailpit)
 ├── Dockerfile                      # PHP 8.3 + extensions
 │
@@ -430,7 +430,7 @@ snuz/
 │
 └── config/
     ├── services.php                      # Gemini API key, provider config
-    └── snuz.php                          # App-specific config (supported currencies, etc.)
+    └── snuzdan.php                          # App-specific config (supported currencies, etc.)
 ```
 
 ### Key Service Responsibilities
