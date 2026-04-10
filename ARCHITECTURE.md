@@ -1,4 +1,4 @@
-﻿# Snuzdan — Foundational Architecture (v2)
+# Snuzdan — Foundational Architecture (v2)
 
 > Personal Finance & Investment Tracking Web App  
 > School Project · Zero Budget · Append-Only Ledger  
@@ -72,10 +72,13 @@
 -- ENUMS
 -- --------------------------------------------------------
 CREATE TYPE user_status       AS ENUM ('pending', 'active', 'suspended');
+CREATE TYPE workspace_role    AS ENUM ('owner', 'editor', 'viewer');
 CREATE TYPE transaction_side  AS ENUM ('BUY', 'SELL');
 CREATE TYPE asset_class       AS ENUM ('CRYPTO', 'STOCK', 'FX');
 CREATE TYPE category_type     AS ENUM ('SYSTEM', 'CUSTOM');
 CREATE TYPE flow_direction    AS ENUM ('INCOME', 'EXPENSE');
+CREATE TYPE account_type      AS ENUM ('CASH', 'BANK', 'CREDIT_CARD', 'E_WALLET');
+CREATE TYPE recurring_period  AS ENUM ('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY');
 
 -- --------------------------------------------------------
 -- USERS & AUTH
@@ -89,9 +92,35 @@ CREATE TABLE users (
     theme           VARCHAR(10) NOT NULL DEFAULT 'dark', -- 'light' | 'dark'
     status          user_status NOT NULL DEFAULT 'pending',
     email_verified  BOOLEAN NOT NULL DEFAULT FALSE,
+    two_factor_secret         TEXT,
+    two_factor_recovery_codes TEXT,
+    two_factor_confirmed_at   TIMESTAMPTZ,
+    current_workspace_id      UUID,                   -- Will be FK after workspaces table
     avatar_url      TEXT,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- --------------------------------------------------------
+-- WORKSPACES (Aile / Paylaşımlı Cüzdan Modeli)
+-- --------------------------------------------------------
+CREATE TABLE workspaces (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name            VARCHAR(100) NOT NULL,
+    created_by      UUID NOT NULL REFERENCES users(id),
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE users ADD CONSTRAINT fk_current_workspace FOREIGN KEY (current_workspace_id) REFERENCES workspaces(id) ON DELETE SET NULL;
+
+CREATE TABLE workspace_user (
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id),
+    created_by_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    role            workspace_role NOT NULL DEFAULT 'viewer',
+    joined_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (workspace_id, user_id)
 );
 
 CREATE INDEX idx_users_email ON users (email);
@@ -99,7 +128,8 @@ CREATE INDEX idx_users_email ON users (email);
 -- OAuth accounts (Google, etc.)
 CREATE TABLE oauth_accounts (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id),
+    created_by_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     provider        VARCHAR(50) NOT NULL,             -- 'google'
     provider_id     VARCHAR(255) NOT NULL,
     access_token    TEXT,
@@ -112,11 +142,31 @@ CREATE TABLE oauth_accounts (
 -- Email verification tokens
 CREATE TABLE verification_tokens (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id),
+    created_by_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     token       VARCHAR(255) NOT NULL UNIQUE,
     expires_at  TIMESTAMPTZ NOT NULL,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- --------------------------------------------------------
+-- ACCOUNTS / WALLETS
+-- --------------------------------------------------------
+CREATE TABLE accounts (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id),
+    created_by_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    name            VARCHAR(100) NOT NULL,             -- 'Akbank', 'Nakit', 'Enpara Kredi Kartı'
+    type            account_type NOT NULL,
+    currency        CHAR(3) NOT NULL DEFAULT 'USD',
+    balance         NUMERIC(20, 2) NOT NULL DEFAULT 0, -- Cached balance to avoid heavy queries constantly
+    color           VARCHAR(7),                        -- hex color for UI
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_accounts_workspace ON accounts (workspace_id);
 
 -- --------------------------------------------------------
 -- INCOME & EXPENSE MODULE (unified categories, separate ledgers)
@@ -125,7 +175,7 @@ CREATE TABLE verification_tokens (
 -- Categories shared by both income and expense
 CREATE TABLE categories (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     UUID REFERENCES users(id),            -- NULL = system category
+    workspace_id  UUID REFERENCES workspaces(id),            -- NULL = system category
     name        VARCHAR(100) NOT NULL,
     icon        VARCHAR(50),                           -- emoji or icon name
     color       VARCHAR(7),                            -- hex color
@@ -137,13 +187,13 @@ CREATE TABLE categories (
     -- System categories: user_id must be NULL
     -- Custom categories: user_id must be set
     CONSTRAINT chk_category_owner CHECK (
-        (cat_type = 'SYSTEM' AND user_id IS NULL)
+        (cat_type = 'SYSTEM' AND workspace_id IS NULL)
         OR
-        (cat_type = 'CUSTOM' AND user_id IS NOT NULL)
+        (cat_type = 'CUSTOM' AND workspace_id IS NOT NULL)
     )
 );
 
-CREATE INDEX idx_cat_user ON categories (user_id);
+CREATE INDEX idx_cat_workspace ON categories (workspace_id);
 CREATE INDEX idx_cat_direction ON categories (direction);
 
 -- ============================================================
@@ -151,7 +201,9 @@ CREATE INDEX idx_cat_direction ON categories (direction);
 -- ============================================================
 CREATE TABLE income_transactions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id),
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id),
+    created_by_user_id UUID REFERENCES users(id),
+    account_id      UUID NOT NULL REFERENCES accounts(id),
     category_id     UUID NOT NULL REFERENCES categories(id),
     amount          NUMERIC(20, 2) NOT NULL,
     currency        CHAR(3) NOT NULL DEFAULT 'USD',
@@ -166,15 +218,17 @@ CREATE TABLE income_transactions (
     CONSTRAINT chk_income_positive CHECK (amount > 0)
 );
 
-CREATE INDEX idx_inc_tx_user ON income_transactions (user_id);
-CREATE INDEX idx_inc_tx_date ON income_transactions (user_id, income_date);
+CREATE INDEX idx_inc_tx_workspace ON income_transactions (workspace_id);
+CREATE INDEX idx_inc_tx_date ON income_transactions (workspace_id, income_date);
 
 -- ============================================================
 -- EXPENSE LEDGER — append-only
 -- ============================================================
 CREATE TABLE expense_transactions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id),
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id),
+    created_by_user_id UUID REFERENCES users(id),
+    account_id      UUID NOT NULL REFERENCES accounts(id),
     category_id     UUID NOT NULL REFERENCES categories(id),
     amount          NUMERIC(20, 2) NOT NULL,
     currency        CHAR(3) NOT NULL DEFAULT 'USD',
@@ -189,9 +243,30 @@ CREATE TABLE expense_transactions (
     CONSTRAINT chk_expense_positive CHECK (amount > 0)
 );
 
-CREATE INDEX idx_exp_tx_user ON expense_transactions (user_id);
-CREATE INDEX idx_exp_tx_date ON expense_transactions (user_id, expense_date);
+CREATE INDEX idx_exp_tx_workspace ON expense_transactions (workspace_id);
+CREATE INDEX idx_exp_tx_date ON expense_transactions (workspace_id, expense_date);
 CREATE INDEX idx_exp_tx_cat  ON expense_transactions (category_id);
+
+-- ============================================================
+-- RECURRING TRANSACTIONS (Düzenli Gelir/Gider)
+-- ============================================================
+CREATE TABLE recurring_transactions (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id),
+    created_by_user_id UUID REFERENCES users(id),
+    account_id      UUID NOT NULL REFERENCES accounts(id),
+    category_id     UUID NOT NULL REFERENCES categories(id),
+    direction       flow_direction NOT NULL,
+    amount          NUMERIC(20, 2) NOT NULL,
+    currency        CHAR(3) NOT NULL DEFAULT 'USD',
+    period          recurring_period NOT NULL,
+    note            TEXT,
+    next_run_date   DATE NOT NULL,
+    is_active       BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_recurring_tx_run ON recurring_transactions (next_run_date) WHERE is_active = TRUE;
 
 -- --------------------------------------------------------
 -- INVESTMENT MODULE — APPEND-ONLY LEDGER
@@ -216,7 +291,8 @@ CREATE INDEX idx_assets_class ON assets (asset_class);
 -- ============================================================
 CREATE TABLE investment_transactions (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id          UUID NOT NULL REFERENCES users(id),
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id),
+    created_by_user_id UUID REFERENCES users(id),
     asset_id         UUID NOT NULL REFERENCES assets(id),
     side             transaction_side NOT NULL,         -- BUY or SELL
     quantity         NUMERIC(20, 8) NOT NULL,
@@ -238,16 +314,16 @@ CREATE TABLE investment_transactions (
     CONSTRAINT chk_positive_price CHECK (unit_price > 0)
 );
 
-CREATE INDEX idx_inv_tx_user ON investment_transactions (user_id);
+CREATE INDEX idx_inv_tx_workspace ON investment_transactions (workspace_id);
 CREATE INDEX idx_inv_tx_asset ON investment_transactions (asset_id);
-CREATE INDEX idx_inv_tx_date ON investment_transactions (user_id, transaction_date);
+CREATE INDEX idx_inv_tx_date ON investment_transactions (workspace_id, transaction_date);
 
 -- ============================================================
 -- POSITION SUMMARY VIEW (computed, never stored)
 -- ============================================================
 CREATE VIEW v_positions AS
 SELECT
-    t.user_id,
+    t.workspace_id,
     t.asset_id,
     a.asset_class,
     a.symbol,
@@ -268,7 +344,7 @@ SELECT
     COUNT(*) FILTER (WHERE NOT is_void) AS trade_count
 FROM investment_transactions t
 JOIN assets a ON a.id = t.asset_id
-GROUP BY t.user_id, t.asset_id, a.asset_class, a.symbol, a.name;
+GROUP BY t.workspace_id, t.asset_id, a.asset_class, a.symbol, a.name;
 
 -- --------------------------------------------------------
 -- PRICE CACHE
@@ -300,7 +376,8 @@ CREATE INDEX idx_fx_pair_time ON fx_rate_snapshots (base_currency, quote_currenc
 -- --------------------------------------------------------
 CREATE TABLE ai_interactions (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id),
+    workspace_id    UUID NOT NULL REFERENCES workspaces(id),
+    created_by_user_id UUID REFERENCES users(id),
     prompt          TEXT NOT NULL,                     -- user's natural language input
     response        JSONB NOT NULL,                    -- AI's structured response
     action_type     VARCHAR(50) NOT NULL,              -- 'parse_transaction', 'categorize', 'report'
@@ -395,7 +472,8 @@ snuzdan/
 │   ├── Providers/                        # Price data source implementations
 │   │   ├── PriceProviderInterface.php    # Contract
 │   │   ├── BinanceProvider.php           # Crypto prices (free, no key)
-│   │   └── YahooProvider.php             # Stocks + FX (free)
+│   │   ├── YahooProvider.php             # Stocks + FX (free)
+│   │   └── AlphaVantageProvider.php      # Fallback for Yahoo
 │   │
 │   ├── Jobs/                             # Queue jobs
 │   │   ├── FetchPriceSnapshots.php       # Periodic price caching
@@ -426,7 +504,12 @@ snuzdan/
 │   └── js/                               # React (Inertia) frontend → see §4
 │
 ├── routes/
+│   ├── api.php                           # Mobile App JSON endpoints
 │   └── web.php                           # All routes (Inertia handles SPA)
+│
+├── tests/
+│   ├── Feature/                          # Controller, DB ve API testleri
+│   └── Unit/                             # Portfolio FIFO vb. logic testleri
 │
 └── config/
     ├── services.php                      # Gemini API key, provider config
@@ -454,12 +537,12 @@ snuzdan/
         │ asset_class'a göre yönlendirir
    ┌────┴─────┐
    ▼          ▼
-┌────────┐ ┌────────┐
-│Binance │ │Yahoo   │   ← Değiştirilebilir provider'lar
-│Provider│ │Provider│
-└────────┘ └────────┘
-     │          │
-     └────┬─────┘
+┌────────┐ ┌────────┐    ┌────────┐
+│Binance │ │Yahoo   │ ─> │Alpha V.│ ← Fallback (Yahoo çökerse)
+│Provider│ │Provider│    │Provider│
+└────────┘ └────────┘    └────────┘
+     │          │             │
+     └────┬─────┴─────────────┘
           ▼
   price_snapshots (cache)
 ```
@@ -609,6 +692,7 @@ resources/js/
 | **nivo kütüphanesi gelişmiş grafikler için** | Recharts Sankey/Heatmap/Treemap desteklemiyor; nivo bu üçünde en iyi |
 | **AI interaction log tablosu** | Kullanıcının AI ile etkileşimini kaydeder; kabul/ret oranı ölçülebilir |
 | **Tema tercihi DB'de** | `users.theme` alanı; cihazlar arası senkronize; localStorage + DB hybrid |
+| **Pest PHP & Feature Tests** | Portföy FIFO algoritması gibi hassas finansal mantıkların hatasız çalışmasını garanti altına alır |
 
 ### ⚠️ Trade-offs
 
@@ -617,7 +701,8 @@ resources/js/
 | **Gemini API rate limit** (free: 60 req/min) | AI çağrılarını debounce et; response cache'le |
 | **Yahoo Finance kararsızlığı** | Provider abstraction ile Alpha Vantage'a geçilebilir |
 | **Inertia SSR opsiyonel** | İlk aşamada SSR kapalı; performans gerekirse açılır |
-| **Redis zorunlu mu?** | Queue ve cache için gerekli; Docker Compose'da zaten var |
+| **E2E Testing (Cypress)** | Hatalar manuel değil, Cypress ile end-to-end otomatize test edilir |\n| **Observability (Sentry)** | Merkezi loglama ve trace takibi |\n| **Redis zorunlu mu?** | Queue ve cache için gerekli; Docker Compose'da zaten var |
+| **İlerideki Mobil Uygulama** | "Fat Service, Thin Controller" yapısı kurularak `routes/api.php` üzerinden API (JSON) döndüren rotalar kolayca eklenebilir |
 
 ### 🔄 Data Flow: AI ile İşlem Ekleme
 
@@ -663,3 +748,16 @@ User: "Dün akşam 250 lira yemek yedim"
 │  └───────────┘  └──────────┘                    │
 └─────────────────────────────────────────────────┘
 ```
+
+
+## 9. FAZ 3 (Gelecek Enterprise Vizyonu)
+
+Mevcut yapı sağlam bir startup/mid-scale mimarisidir. Zaman veya kaynak elverişli olduğunda proje aşağıdaki enterprise standartlarına çekilecektir:
+
+### 9.1 CQRS (Command Query Responsibility Segregation)
+- **Problem:** Grafikler ve dashboard yoğun veri okuması gerektirir, yazma (INSERT) işlemlerinin olduğu tablolarla aynı DB'yi kullanmak performansı etkiler.
+- **Kusursuz Vizyon:** Command (Yazma) işlemleri PostgreSQL'de yapılır, sistem MongoDB veya ElasticSearch'e asenkron Data Projection gönderir. Dashboardlar doğrudan okuma için optimize edilmiş NoSQL veya ayrı read-replica veritabanını sorgular.
+
+### 9.2 Event Sourcing (Olay Tabanlı Mimari)
+- **Problem:** Append-only yapı veri silinmesini çözse de, bakiyenin anlık durumu sürekli yeniden hesaplanır.
+- **Kusursuz Vizyon:** Veritabanında (işlemler) değil (olaylar) `MoneyDeposited`, `ExpenseAdded` tutulur. Kafka veya RabbitMQ aracılığıyla bu eventler stream edilir. Bir sistem çökerse veya geçmişe dönülmesi gerekirse (Time-travel debugging) Kafka'daki eventler baştan replay edilir. Bankacılığın temelidir.

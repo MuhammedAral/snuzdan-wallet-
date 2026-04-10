@@ -11,6 +11,8 @@
 - Tüm finansal tablolarda **DELETE ve UPDATE yasak** — append-only ledger. İptal = `is_void = true`.
 - Backend'de her zaman **Form Request** ile validation yap, controller'da değil.
 - Frontend'de tüm formlar **Zod** ile valide edilecek.
+- İlerideki Mobil Uygulama için Controller'ları ince (sadece HTTP Response), Service'leri kalın (Tüm Business Logic) tutun (Fat Service, Thin Controller).
+- Test Yazma: Pest PHP ile önemli servisler (özellikle finansal hesaplamalar) için test yazılacak.
 - Tema sistemi: Tailwind `dark:` prefix + `ThemeProvider` context. Light/dark her component'te desteklenmeli.
 - Tüm primary key'ler **UUID** — `gen_random_uuid()`.
 - Her PR'dan önce diğer kişiyi haberdar et, özellikle `migrations/` değişikliklerinde.
@@ -67,6 +69,8 @@ app/Http/Controllers/ altında şu boş controller dosyalarını oluştur:
 - CategoryController.php
 - AiController.php
 - SettingsController.php
+
+routes/api.php dosyasını oluşturup, Sanctum eşliğinde örnek bir auth grubu aç. İleride mobil uygulama buradan bağlanacak.
 
 config/snuzdan.php dosyasını oluştur: desteklenen para birimleri (USD, EUR, TRY), 
 desteklenen asset sınıfları (CRYPTO, STOCK, FX) gibi app-specific config'leri içersin.
@@ -128,10 +132,10 @@ routes/web.php'ye Google OAuth route'larını ekle.
 ```
 ARCHITECTURE.md'deki categories tablosu DDL'ini kullanarak migration yaz.
 
-Alanlar: id, user_id (nullable), name, icon (emoji), color (hex), 
+Alanlar: id, workspace_id (nullable), name, icon (emoji), color (hex), 
 direction enum('INCOME','EXPENSE'), cat_type enum('SYSTEM','CUSTOM'), is_active, created_at
 
-CHECK constraint: SYSTEM kategorilerde user_id NULL olmalı, CUSTOM'da dolu olmalı.
+CHECK constraint: SYSTEM kategorilerde workspace_id NULL olmalı, CUSTOM'da dolu olmalı.
 
 CategorySeeder.php yaz — ARCHITECTURE.md'deki Türkçe system kategori INSERT'lerini ekle:
 Gider: Kira 🏠, Faturalar 📄, Yemek 🍕, Ulaşım 🚗, Eğlence 🎬, Sağlık 💊, 
@@ -176,7 +180,9 @@ ARCHITECTURE.md'deki expense_transactions DDL'ini kullanarak migration yaz.
 
 Alanlar:
 - id: UUID
-- user_id: UUID FK → users
+- workspace_id: UUID FK → workspaces
+- created_by_user_id: UUID FK → users (işlemi ekleyen)
+- account_id: UUID FK → accounts
 - category_id: UUID FK → categories  
 - amount: numeric(20,2) NOT NULL CHECK > 0
 - currency: char(3) default 'USD'
@@ -188,7 +194,7 @@ Alanlar:
 - void_reason: text nullable
 - voided_at: timestamptz nullable
 
-Index'ler: (user_id), (user_id, expense_date), (category_id)
+Index'ler: (workspace_id), (workspace_id, expense_date), (category_id)
 ```
 
 #### GÖREV A-11: AppendOnlyGuard Middleware
@@ -225,7 +231,8 @@ app/Http/Requests/StoreExpenseRequest.php yaz:
 Validation kuralları:
 - amount: required, numeric, min:0.01
 - currency: required, string, size:3, in: USD/EUR/TRY
-- category_id: required, uuid, exists:categories,id (ve kullanıcıya ait olmalı)
+- account_id: required, uuid, exists:accounts,id (ve mevcut çalışma alanına ait olmalı)
+- category_id: required, uuid, exists:categories,id (ve mevcut çalışma alanına ait olmalı)
 - note: nullable, string, max:500
 - expense_date: required, date, before_or_equal:today
 - fx_rate_to_base: nullable, numeric, min:0
@@ -240,6 +247,7 @@ resources/js/Pages/Expenses/Index.tsx yaz:
 Sol panel — Gider Ekleme Formu (ExpenseEntryForm component):
 - Tutar input (büyük, belirgin)
 - Para birimi seçici (USD/EUR/TRY)
+- AccountPicker component (Hesap Seçimi: Nakit/Banka)
 - CategoryPicker component (EXPENSE direction)
 - Tarih seçici (DatePicker, default bugün)
 - Not alanı (textarea, opsiyonel)
@@ -271,7 +279,7 @@ Gider tablosuyla neredeyse aynı, farklar:
 - expense_date yerine income_date
 - category_id: direction='INCOME' olan kategorilere FK
 
-Index'ler: (user_id), (user_id, income_date)
+Index'ler: (workspace_id), (workspace_id, income_date)
 ```
 
 #### GÖREV A-16: IncomeService ve Controller
@@ -413,6 +421,56 @@ LinkedAccountsList component:
 
 ---
 
+### 💳 AŞAMA 9 — Hesaplar (Wallets) & Düzenli İşlemler
+
+#### GÖREV A-23: Accounts Tablosu ve Modeli
+```text
+ARCHITECTURE.md'deki accounts tablosu DDL'ini kullanarak migration yaz.
+account_type enum('CASH', 'BANK', 'CREDIT_CARD', 'E_WALLET') eklenecek.
+app/Models/Account.php: fillable (name, type, currency, balance, color) ve ilişkileri ekle.
+AccountController.php: Yeni hesap oluşturma, listeleme, silme (pasife alma) işlemleri.
+resources/js/Components/accounts/AccountPicker.tsx: Gelir/Gider formları için hesap seçici.
+```
+
+#### GÖREV A-24: Düzenli İşlemler (Recurring Transactions)
+```text
+ARCHITECTURE.md'deki recurring_transactions tablosu DDL'i ile migration yaz.
+recurring_period enum('DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY') eklenecek.
+app/Models/RecurringTransaction.php modeli ve ilişkileri.
+RecurringController: Düzenli gider/gelir tanımı (Örn: Her ay 1'inde 5000TL Kira) ekleme formları.
+app/Jobs/ProcessRecurringTransactions.php yaz: 
+- Laravel Scheduler (Kernel.php) ile her gün gece 00:01'de çalışacak. 
+- next_run_date'i gelmiş aktif kayıtları bulup expense veya income tablolarına otomatik olarak INSERT edecek.
+- Sonrasında o kaydın next_run_date'ini period'a göre ileri saracak (örneğin 1 ay sonraya).
+```
+
+---
+
+
+### 🛡️ AŞAMA 10 — Enterprise Seviye (2FA & Workspaces & E2E)
+
+#### GÖREV A-25: 2FA (Two-Factor Authentication)
+```text
+Kullanıcının hesabını güvene almak için 2FA entegrasyonu yap (`pragmarx/google2fa-laravel` veya Jetstream).
+- Ayarlar sayfasında "2FA Aktive Et" butonu ile QR kod gösterimi.
+- Login sonrası eğer 2FA aktifse doğrulama ekranına (TOTP) yönlendirme.
+```
+
+#### GÖREV A-26: Paylaşımlı Cüzdanlar (Workspaces)
+```text
+ARCHITECTURE.md'deki `workspaces` ve `workspace_user` tabloları için migration ve Model yaz.
+- Ayarlar sayfasına "Çalışma Alanları" menüsü ekle.
+- "Ortak Davet Et" özelliği: Sisteme kayıtlı bir e-postayı workspace'e `editor` veya `viewer` rolüyle ekle.
+- TopBar'a "Geçerli Cüzdanı Değiştir" dropdown'ı ekle. UI buna göre veri çeksinecek (artık her şey user_id değil workspace_id üzerinden çalışacak).
+```
+
+#### GÖREV A-27: E2E Testleri (Cypress) & Observability
+```text
+- Sentry entegrasyonu yap (Merkezi loglama).
+- Sistemin tüm kritik süreçlerini (Kayıt, Login, Gider Ekleme, Kategori Seçme) Cypress ile end-to-end teste sok.
+- `cypress/e2e` klasöründe otomatize test senaryolarını yaz.
+```
+
 ## 👤 MUHAMMED ALİ'NİN GÖREVLERİ
 
 ### 🏗️ AŞAMA 1 — Altyapıya Ekleme
@@ -516,12 +574,19 @@ NOT: Yahoo Finance resmi API'si yok, HTTP scraping veya
 yahoo-finance2 benzeri kütüphane kullan.
 ```
 
-#### GÖREV M-7: PriceService
+#### GÖREV M-6.5: AlphaVantageProvider (Fallback)
+```text
+app/Providers/AlphaVantageProvider.php yaz.
+Yahoo Finance patlarsa diye yedek (fallback) API olarak kullanılacak.
 ```
+
+#### GÖREV M-7: PriceService
+```text
 app/Services/PriceService.php:
 
 fetchAndCache(Asset $asset):
-- asset_class'a göre doğru Provider'ı seç (BinanceProvider veya YahooProvider)
+- asset_class'a göre doğru Provider'ı seç (Binance, Yahoo)
+- Eğer Yahoo Exception fırlatırsa `try-catch` ile AlphaVantageProvider'a fallback (yedek) yap.
 - Fiyatı çek
 - price_snapshots tablosuna INSERT et
 - Redis'e cache'le (TTL: 1 dakika, key: "price:{asset_id}")
@@ -529,7 +594,7 @@ fetchAndCache(Asset $asset):
 getLatestPrice(Asset $asset): float
 - Önce Redis cache'e bak
 - Cache yoksa price_snapshots'tan son kaydı al
-- O da yoksa fetchAndCache() çağır
+- O da yoksa fetchAndCache() çağır (İki provider da çökmüşse son çare olarak DB'deki eski fiyatı dön)
 ```
 
 #### GÖREV M-8: FxService
@@ -753,6 +818,16 @@ SparkLine.tsx (recharts):
 - Mini satır içi grafik (PositionCard içinde kullanılacak)
 - Son 24 saatin fiyat değişimi
 - Pozitif/negatife göre renk
+```
+
+#### GÖREV M-20: Test Yazımı (Unit Tests)
+```text
+Pest PHP kullanarak tests/Unit/ klasörü altına logic testleri yaz.
+Özellikle PortfolioService::getFifoPnL metodunun;
+1. Sadece ALIŞ yapılmış durumlar,
+2. Karışık ALIŞ-SATIŞ yapılmış durumlar,
+3. Kısmi satım ve void edilmiş kayıtlar içeren durumlar,
+farklı komplo senaryoları altında kesinlikle doğru sonuç verdiğini otomatize eden testler hazırla.
 ```
 
 ---
