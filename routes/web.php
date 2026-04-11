@@ -27,11 +27,16 @@ Route::middleware('auth')->group(function () {
 
     // Yatırım İşlemleri (Muhammed Ali)
     Route::get('/investments', [InvestmentController::class, 'index'])->name('investments.index');
-    Route::post('/investments', [InvestmentController::class, 'store'])->name('investments.store');
-    Route::post('/investments/{id}/void', [InvestmentController::class, 'void'])->name('investments.void');
+    Route::middleware('append_only')->group(function () {
+        Route::post('/investments', [InvestmentController::class, 'store'])->name('investments.store');
+        Route::post('/investments/{id}/void', [InvestmentController::class, 'void'])->name('investments.void');
+    });
 
     // Portföy (Muhammed Ali)
     Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
+
+    // Gider Modülü (Akif)
+    Route::get('/expenses', [\App\Http\Controllers\ExpenseController::class, 'page'])->name('expenses.index');
 });
 
 require __DIR__.'/auth.php';

@@ -36,5 +36,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/categories', [\App\Http\Controllers\CategoryController::class, 'store']);
     Route::put('/categories/{id}', [\App\Http\Controllers\CategoryController::class, 'update']);
     Route::delete('/categories/{id}', [\App\Http\Controllers\CategoryController::class, 'destroy']);
+
+    // Gider Modülü (append_only middleware ile)
+    Route::get('/expenses', [\App\Http\Controllers\ExpenseController::class, 'index']);
+    
+    Route::middleware('append_only')->group(function () {
+        Route::post('/expenses', [\App\Http\Controllers\ExpenseController::class, 'store']);
+        Route::post('/expenses/{id}/void', [\App\Http\Controllers\ExpenseController::class, 'void']);
+    });
 });
 
