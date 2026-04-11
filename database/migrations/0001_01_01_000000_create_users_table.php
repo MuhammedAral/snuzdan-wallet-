@@ -2,70 +2,98 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        // 1. Workspaces (Basit hali, A-4 için Foreign Key hatalarını önlemek amacıyla)
-        Schema::create('workspaces', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('name', 100);
-            $table->uuid('created_by'); // Reference users after creation, so just uuid for now
-            $table->timestampsPaginated = false;
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
-        });
+        // ── PostgreSQL ENUM Types ──
+        DB::statement("CREATE TYPE user_status AS ENUM ('pending', 'active', 'suspended')");
+        DB::statement("CREATE TYPE workspace_role AS ENUM ('owner', 'editor', 'viewer')");
 
-        // 2. Users
+        // ── 1. USERS ──
         Schema::create('users', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('email', 255)->unique();
-            $table->string('password_hash', 255)->nullable();
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('email')->unique();
+            $table->string('password_hash')->nullable();
             $table->string('display_name', 100);
             $table->char('base_currency', 3)->default('USD');
             $table->string('theme', 10)->default('dark');
-            // user_status ENUM ('pending', 'active', 'suspended')
-            $table->enum('status', ['pending', 'active', 'suspended'])->default('pending');
             $table->boolean('email_verified')->default(false);
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();
-            $table->timestamp('two_factor_confirmed_at')->nullable();
-            
+            $table->timestampTz('two_factor_confirmed_at')->nullable();
             $table->uuid('current_workspace_id')->nullable();
-            $table->foreign('current_workspace_id')->references('id')->on('workspaces')->nullOnDelete();
-            
             $table->text('avatar_url')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrent();
+            $table->rememberToken();
+            $table->timestampTz('created_at')->default(DB::raw('NOW()'));
+            $table->timestampTz('updated_at')->default(DB::raw('NOW()'));
         });
-        
-        // Add foreign key to workspaces manually now that users exists
-        Schema::table('workspaces', function (Blueprint $table) {
-            $table->foreign('created_by')->references('id')->on('users')->cascadeOnDelete();
+        // Add the enum column via raw SQL (Laravel Schema doesn't support custom PG enums)
+        DB::statement("ALTER TABLE users ADD COLUMN status user_status NOT NULL DEFAULT 'pending'");
+
+        // ── 2. WORKSPACES ──
+        Schema::create('workspaces', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('name', 100);
+            $table->uuid('created_by');
+            $table->timestampTz('created_at')->default(DB::raw('NOW()'));
+            $table->timestampTz('updated_at')->default(DB::raw('NOW()'));
+            $table->foreign('created_by')->references('id')->on('users');
         });
-        
-        // workspace_user pivot
+
+        // ── 3. Circular FK: users.current_workspace_id → workspaces ──
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('current_workspace_id', 'fk_current_workspace')
+                  ->references('id')->on('workspaces')->onDelete('set null');
+        });
+
+        // ── 4. WORKSPACE_USER pivot ──
         Schema::create('workspace_user', function (Blueprint $table) {
             $table->uuid('workspace_id');
             $table->uuid('user_id');
-            // role ENUM
-            $table->enum('role', ['owner', 'editor', 'viewer'])->default('viewer');
-            $table->timestamp('joined_at')->useCurrent();
-            
+            $table->timestampTz('joined_at')->default(DB::raw('NOW()'));
             $table->primary(['workspace_id', 'user_id']);
-            $table->foreign('workspace_id')->references('id')->on('workspaces')->cascadeOnDelete();
-            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('workspace_id')->references('id')->on('workspaces')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+        DB::statement("ALTER TABLE workspace_user ADD COLUMN role workspace_role NOT NULL DEFAULT 'viewer'");
+
+        // ── 5. OAUTH ACCOUNTS ──
+        Schema::create('oauth_accounts', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('workspace_id')->nullable();
+            $table->uuid('user_id');
+            $table->string('provider', 50);
+            $table->string('provider_id');
+            $table->text('access_token')->nullable();
+            $table->text('refresh_token')->nullable();
+            $table->timestampTz('expires_at')->nullable();
+            $table->timestampTz('created_at')->default(DB::raw('NOW()'));
+            $table->unique(['provider', 'provider_id']);
+            $table->foreign('workspace_id')->references('id')->on('workspaces');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
+        // ── 6. VERIFICATION TOKENS ──
+        Schema::create('verification_tokens', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('workspace_id')->nullable();
+            $table->uuid('user_id');
+            $table->string('token')->unique();
+            $table->timestampTz('expires_at');
+            $table->timestampTz('created_at')->default(DB::raw('NOW()'));
+            $table->foreign('workspace_id')->references('id')->on('workspaces');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+        });
+
+        // ── 7. LARAVEL FRAMEWORK TABLES ──
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
-            $table->timestamp('created_at')->nullable();
+            $table->timestampTz('created_at')->nullable();
         });
 
         Schema::create('sessions', function (Blueprint $table) {
@@ -76,57 +104,21 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
-
-        Schema::create('oauth_accounts', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('workspace_id')->nullable(); // Set nullable initially if required or just keep
-            $table->foreign('workspace_id')->references('id')->on('workspaces')->cascadeOnDelete();
-            $table->uuid('created_by_user_id');
-            $table->foreign('created_by_user_id')->references('id')->on('users')->cascadeOnDelete();
-            
-            $table->string('provider', 50);
-            $table->string('provider_id', 255);
-            $table->text('access_token')->nullable();
-            $table->text('refresh_token')->nullable();
-            $table->timestamp('expires_at')->nullable();
-            $table->timestamp('created_at')->useCurrent();
-
-            $table->unique(['provider', 'provider_id']);
-        });
-
-        Schema::create('verification_tokens', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('workspace_id')->nullable();
-            $table->foreign('workspace_id')->references('id')->on('workspaces')->cascadeOnDelete();
-            $table->uuid('created_by_user_id');
-            $table->foreign('created_by_user_id')->references('id')->on('users')->cascadeOnDelete();
-            
-            $table->string('token', 255)->unique();
-            $table->timestamp('expires_at');
-            $table->timestamp('created_at')->useCurrent();
-        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('verification_tokens');
-        Schema::dropIfExists('oauth_accounts');
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('verification_tokens');
+        Schema::dropIfExists('oauth_accounts');
         Schema::dropIfExists('workspace_user');
-        
-        Schema::table('workspaces', function (Blueprint $table) {
-            $table->dropForeign(['created_by']);
-        });
-        
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['current_workspace_id']);
+            $table->dropForeign('fk_current_workspace');
         });
-        
-        Schema::dropIfExists('users');
         Schema::dropIfExists('workspaces');
+        Schema::dropIfExists('users');
+        DB::statement("DROP TYPE IF EXISTS workspace_role");
+        DB::statement("DROP TYPE IF EXISTS user_status");
     }
 };
