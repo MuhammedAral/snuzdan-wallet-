@@ -43,6 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Gelir Modülü (append_only middleware ile)
     Route::get('/incomes', [\App\Http\Controllers\IncomeController::class, 'index']);
 
+    // Yapay Zeka
+    Route::post('/ai/parse', [\App\Http\Controllers\AiController::class, 'parseTransaction']);
+
     Route::middleware('append_only')->group(function () {
         // Expenses
         Route::post('/expenses', [\App\Http\Controllers\ExpenseController::class, 'store']);

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import CategoryPicker from '@/Components/expenses/CategoryPicker';
+import AiTransactionInput from '@/Components/ai/AiTransactionInput';
 import { Save, AlertCircle, Ban } from 'lucide-react';
 
 interface Expense {
@@ -88,6 +89,21 @@ export default function ExpensesIndex() {
         });
     };
 
+    const handleAiParsed = (parsed: any) => {
+        if (parsed.type === 'EXPENSE') {
+            setAmount(parsed.amount.toString());
+            setCurrency(parsed.currency || 'TRY');
+            setExpenseDate(parsed.date || new Date().toISOString().split('T')[0]);
+            setNotes(parsed.note || '');
+            // Not: category_name geldi, kullanıcı CategoryPicker'dan eliyle seçmeli ya da API otomatik backend'de eşleştirmeli. Şimdilik not olarak basıyoruz.
+            if(parsed.category_name) {
+                setNotes(prev => (prev ? prev + ' | ' : '') + `AI Kategori Önerisi: ${parsed.category_name}`);
+            }
+        } else {
+            setError('Yapay zeka bunu gelir olarak anladı. Gelir sayfasına gidin.');
+        }
+    };
+
     return (
         <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-slate-100 leading-tight">Gider Yönetimi</h2>}>
             <Head title="Giderler" />
@@ -96,10 +112,13 @@ export default function ExpensesIndex() {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-6">
                     
                     {/* Left: Input Form */}
-                    <div className="w-full lg:w-1/3">
+                    <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                        {/* Yapay Zeka Modülü */}
+                        <AiTransactionInput onParsed={handleAiParsed} />
+
                         <div className="bg-slate-900 overflow-hidden shadow-sm shadow-slate-900/50 sm:rounded-2xl border border-slate-800">
                             <div className="p-6">
-                                <h3 className="text-lg font-medium text-white mb-6">Yeni Gider Ekle</h3>
+                                <h3 className="text-lg font-medium text-white mb-6">Manuel Gider Ekle</h3>
 
                                 {error && (
                                     <div className="mb-6 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 flex gap-3 text-rose-400">
