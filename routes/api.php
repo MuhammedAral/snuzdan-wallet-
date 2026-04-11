@@ -40,9 +40,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // Gider Modülü (append_only middleware ile)
     Route::get('/expenses', [\App\Http\Controllers\ExpenseController::class, 'index']);
     
+    // Gelir Modülü (append_only middleware ile)
+    Route::get('/incomes', [\App\Http\Controllers\IncomeController::class, 'index']);
+
     Route::middleware('append_only')->group(function () {
+        // Expenses
         Route::post('/expenses', [\App\Http\Controllers\ExpenseController::class, 'store']);
         Route::post('/expenses/{id}/void', [\App\Http\Controllers\ExpenseController::class, 'void']);
+
+        // Incomes
+        Route::post('/incomes', [\App\Http\Controllers\IncomeController::class, 'store']);
+        Route::post('/incomes/{id}/void', [\App\Http\Controllers\IncomeController::class, 'void']);
     });
 });
 

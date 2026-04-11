@@ -34,6 +34,12 @@ export default function Authenticated({
                                     Dashboard
                                 </NavLink>
                                 <NavLink
+                                    href={route('incomes.index')}
+                                    active={route().current('incomes.index')}
+                                >
+                                    Gelirler
+                                </NavLink>
+                                <NavLink
                                     href={route('expenses.index')}
                                     active={route().current('expenses.index')}
                                 >

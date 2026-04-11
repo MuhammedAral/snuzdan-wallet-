@@ -37,6 +37,9 @@ Route::middleware('auth')->group(function () {
 
     // Gider Modülü (Akif)
     Route::get('/expenses', [\App\Http\Controllers\ExpenseController::class, 'page'])->name('expenses.index');
+
+    // Gelir Modülü (Akif)
+    Route::get('/incomes', [\App\Http\Controllers\IncomeController::class, 'page'])->name('incomes.index');
 });
 
 require __DIR__.'/auth.php';
