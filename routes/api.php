@@ -46,6 +46,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Yapay Zeka
     Route::post('/ai/parse', [\App\Http\Controllers\AiController::class, 'parseTransaction']);
 
+    // Dashboard
+    Route::get('/dashboard/summary', [\App\Http\Controllers\DashboardController::class, 'summary']);
+    Route::get('/dashboard/activities', [\App\Http\Controllers\DashboardController::class, 'recentActivity']);
+
     Route::middleware('append_only')->group(function () {
         // Expenses
         Route::post('/expenses', [\App\Http\Controllers\ExpenseController::class, 'store']);
