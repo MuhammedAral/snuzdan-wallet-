@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PortfolioController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,3 +18,18 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+/*
+|--------------------------------------------------------------------------
+| Portfolio API (Muhammed Ali)
+|--------------------------------------------------------------------------
+|
+| Akif'in Dashboard'daki NetWorthCard ve TopMoversCard component'leri
+| bu endpoint'leri kullanır. İlerideki mobil app de buradan veri çekecek.
+|
+*/
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/portfolio/summary', [PortfolioController::class, 'summary']);
+    Route::get('/portfolio/movers', [PortfolioController::class, 'movers']);
+});
+

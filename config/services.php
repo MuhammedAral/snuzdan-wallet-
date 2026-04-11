@@ -41,4 +41,8 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'alpha_vantage' => [
+        'api_key' => env('ALPHA_VANTAGE_API_KEY'),
+    ],
+
 ];
