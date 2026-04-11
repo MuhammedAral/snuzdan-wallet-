@@ -5,8 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\OauthAccount;
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Models\Workspace;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleOAuthController extends Controller
@@ -26,6 +27,7 @@ class GoogleOAuthController extends Controller
             ]);
         }
 
+        // Check if OAuth account already exists
         $oauthAccount = OauthAccount::where('provider', 'google')
             ->where('provider_id', $googleUser->id)
             ->first();
@@ -35,22 +37,37 @@ class GoogleOAuthController extends Controller
             return redirect()->intended(route('dashboard'));
         }
 
+        // Check if a user with this email exists
         $user = User::where('email', $googleUser->email)->first();
 
         if (!$user) {
-            $user = User::create([
-                'email' => $googleUser->email,
-                'display_name' => $googleUser->name ?? 'Kullanıcı',
-                'password_hash' => null,
-                'email_verified' => true,
-                'status' => 'active',
-                'avatar_url' => $googleUser->avatar
-            ]);
+            // Create new user + default workspace in a transaction
+            $user = DB::transaction(function () use ($googleUser) {
+                $user = User::create([
+                    'email' => $googleUser->email,
+                    'display_name' => $googleUser->name ?? 'Kullanıcı',
+                    'password_hash' => null,
+                    'email_verified' => true,
+                    'status' => 'active',
+                    'avatar_url' => $googleUser->avatar,
+                ]);
+
+                $workspace = Workspace::create([
+                    'name' => $user->display_name . '\'in Cüzdanı',
+                    'created_by' => $user->id,
+                ]);
+
+                $workspace->members()->attach($user->id, ['role' => 'owner']);
+                $user->update(['current_workspace_id' => $workspace->id]);
+
+                return $user;
+            });
         }
 
+        // Link Google account to user
         OauthAccount::create([
+            'user_id' => $user->id,
             'workspace_id' => $user->current_workspace_id,
-            'created_by_user_id' => $user->id,
             'provider' => 'google',
             'provider_id' => $googleUser->id,
             'access_token' => $googleUser->token,

@@ -1,46 +1,49 @@
-import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import GuestLayout from '@/Layouts/GuestLayout';
 import { FormEventHandler, useState } from 'react';
-import { Mail, Lock, UserPlus, User, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { User, Mail, Lock, Eye, EyeOff, UserPlus } from 'lucide-react';
 import { z } from 'zod';
 
 const registerSchema = z.object({
-    name: z.string().min(2, 'Ad Soyad en az 2 karakter olmalıdır.'),
+    display_name: z.string().min(2, 'Ad Soyad en az 2 karakter olmalıdır.').max(100, 'Ad Soyad en fazla 100 karakter olabilir.'),
     email: z.string().email('Geçerli bir e-posta adresi giriniz.'),
     password: z.string().min(8, 'Şifre en az 8 karakter olmalıdır.'),
     password_confirmation: z.string(),
 }).refine((data) => data.password === data.password_confirmation, {
-    message: "Şifreler eşleşmiyor.",
-    path: ["password_confirmation"],
+    message: 'Şifreler eşleşmiyor.',
+    path: ['password_confirmation'],
 });
+
+type ZodErrors = Partial<Record<keyof z.infer<typeof registerSchema>, string>>;
 
 export default function Register() {
     const { data, setData, post, processing, errors: serverErrors, reset } = useForm({
-        name: '',
+        display_name: '',
         email: '',
         password: '',
         password_confirmation: '',
     });
 
-    const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
+    const [zodErrors, setZodErrors] = useState<ZodErrors>({});
+    const [showPassword, setShowPassword] = useState(false);
+
+    const errors = { ...zodErrors, ...serverErrors } as Record<string, string>;
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        setClientErrors({});
 
         const result = registerSchema.safeParse(data);
         if (!result.success) {
-            const formatted = result.error.format();
-            setClientErrors({
-                name: formatted.name?._errors[0] || '',
-                email: formatted.email?._errors[0] || '',
-                password: formatted.password?._errors[0] || '',
-                password_confirmation: formatted.password_confirmation?._errors[0] || '',
+            const fieldErrors: ZodErrors = {};
+            result.error.errors.forEach((err) => {
+                const key = err.path[0] as keyof ZodErrors;
+                if (!fieldErrors[key]) fieldErrors[key] = err.message;
             });
+            setZodErrors(fieldErrors);
             return;
         }
 
+        setZodErrors({});
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
@@ -52,12 +55,13 @@ export default function Register() {
 
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Hesap Oluştur</h1>
-                <p className="text-sm text-slate-400">Finansal yolculuğunuza bugün başlayın</p>
+                <p className="text-sm text-slate-400">Finanslarınızı kontrol altına alın</p>
             </div>
 
-            <form onSubmit={submit} className="flex flex-col gap-4">
+            <form onSubmit={submit} className="flex flex-col gap-5">
+                {/* Display Name */}
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="name">
+                    <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="display_name">
                         Ad Soyad
                     </label>
                     <div className="relative">
@@ -65,22 +69,19 @@ export default function Register() {
                             <User size={18} />
                         </div>
                         <input
-                            id="name"
+                            id="display_name"
                             type="text"
-                            value={data.name}
-                            onChange={(e) => setData('name', e.target.value)}
+                            value={data.display_name}
+                            onChange={(e) => setData('display_name', e.target.value)}
                             className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
-                            placeholder="John Doe"
+                            placeholder="Akif Cebe"
                             required
                         />
                     </div>
-                    {(clientErrors.name || serverErrors.name) && (
-                        <p className="mt-1.5 text-xs text-rose-400 flex items-center gap-1">
-                            <AlertCircle size={12} /> {clientErrors.name || serverErrors.name}
-                        </p>
-                    )}
+                    {errors.display_name && <p className="mt-2 text-sm text-rose-400">{errors.display_name}</p>}
                 </div>
 
+                {/* Email */}
                 <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="email">
                         E-posta Adresi
@@ -99,13 +100,10 @@ export default function Register() {
                             required
                         />
                     </div>
-                    {(clientErrors.email || serverErrors.email) && (
-                        <p className="mt-1.5 text-xs text-rose-400 flex items-center gap-1">
-                            <AlertCircle size={12} /> {clientErrors.email || serverErrors.email}
-                        </p>
-                    )}
+                    {errors.email && <p className="mt-2 text-sm text-rose-400">{errors.email}</p>}
                 </div>
 
+                {/* Password */}
                 <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="password">
                         Şifre
@@ -116,21 +114,25 @@ export default function Register() {
                         </div>
                         <input
                             id="password"
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
-                            className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
+                            className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-10 p-3 transition-shadow"
                             placeholder="••••••••"
                             required
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                        >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                     </div>
-                    {(clientErrors.password || serverErrors.password) && (
-                        <p className="mt-1.5 text-xs text-rose-400 flex items-center gap-1">
-                            <AlertCircle size={12} /> {clientErrors.password || serverErrors.password}
-                        </p>
-                    )}
+                    {errors.password && <p className="mt-2 text-sm text-rose-400">{errors.password}</p>}
                 </div>
 
+                {/* Password Confirmation */}
                 <div>
                     <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="password_confirmation">
                         Şifre Tekrar
@@ -141,7 +143,7 @@ export default function Register() {
                         </div>
                         <input
                             id="password_confirmation"
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
@@ -149,19 +151,13 @@ export default function Register() {
                             required
                         />
                     </div>
-                    {(clientErrors.password_confirmation || serverErrors.password_confirmation) && (
-                        <p className="mt-1.5 text-xs text-rose-400 flex items-center gap-1">
-                            <AlertCircle size={12} /> {clientErrors.password_confirmation || serverErrors.password_confirmation}
-                        </p>
-                    )}
+                    {errors.password_confirmation && <p className="mt-2 text-sm text-rose-400">{errors.password_confirmation}</p>}
                 </div>
 
-                <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                <button
                     disabled={processing}
                     type="submit"
-                    className="w-full mt-4 text-white bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 shadow-lg shadow-emerald-500/30 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+                    className="w-full mt-2 text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
                 >
                     {processing ? (
                         <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -170,7 +166,7 @@ export default function Register() {
                             <UserPlus size={18} /> Kayıt Ol
                         </>
                     )}
-                </motion.button>
+                </button>
 
                 <p className="text-sm text-center text-slate-400 mt-2">
                     Zaten hesabınız var mı?{' '}
