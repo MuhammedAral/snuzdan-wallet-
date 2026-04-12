@@ -8,15 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('income_transactions', function (Blueprint $table) {
-            $table->uuid('account_id')->nullable();
-            $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');
-        });
+        if (!Schema::hasColumn('income_transactions', 'account_id')) {
+            Schema::table('income_transactions', function (Blueprint $table) {
+                $table->uuid('account_id')->nullable();
+                $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');
+            });
+        }
 
-        Schema::table('expense_transactions', function (Blueprint $table) {
-            $table->uuid('account_id')->nullable();
-            $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');
-        });
+        if (!Schema::hasColumn('expense_transactions', 'account_id')) {
+            Schema::table('expense_transactions', function (Blueprint $table) {
+                $table->uuid('account_id')->nullable();
+                $table->foreign('account_id')->references('id')->on('accounts')->onDelete('cascade');
+            });
+        }
     }
 
     public function down(): void

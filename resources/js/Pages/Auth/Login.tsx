@@ -1,7 +1,7 @@
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import { Mail, Lock, LogIn, Chrome } from 'lucide-react';
+import { Mail, Lock, LogIn, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Login({
@@ -133,7 +133,7 @@ export default function Login({
                     href="/auth/google"
                     className="w-full text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-3 transition-colors shadow-sm"
                 >
-                    <Chrome size={18} className="text-rose-400" />
+                    <Globe size={18} className="text-rose-400" />
                     Google ile Devam Et
                 </motion.a>
 

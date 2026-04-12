@@ -35,7 +35,7 @@ export default function Register() {
         const result = registerSchema.safeParse(data);
         if (!result.success) {
             const fieldErrors: ZodErrors = {};
-            result.error.errors.forEach((err) => {
+            result.error.issues.forEach((err: any) => {
                 const key = err.path[0] as keyof ZodErrors;
                 if (!fieldErrors[key]) fieldErrors[key] = err.message;
             });

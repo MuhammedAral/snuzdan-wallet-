@@ -9,8 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('base_currency', 3)->default('TRY')->after('current_workspace_id');
-            $table->string('theme', 20)->default('dark')->after('base_currency');
+            if (!Schema::hasColumn('users', 'base_currency')) {
+                $table->string('base_currency', 3)->default('TRY')->after('current_workspace_id');
+            }
+            if (!Schema::hasColumn('users', 'theme')) {
+                $table->string('theme', 20)->default('dark')->after('base_currency');
+            }
         });
     }
 

@@ -557,7 +557,7 @@ function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
                                     <span className="text-sm">İzleyici</span>
                                 </label>
                             </div>
-                            <InputError message={inviteForm.errors.workspace} className="mt-1" />
+                            <InputError message={(inviteForm.errors as any).workspace} className="mt-1" />
                             <div className="flex gap-2">
                                 <PrimaryButton disabled={inviteForm.processing} className="bg-purple-600 hover:bg-purple-500">
                                     Davet Gönder

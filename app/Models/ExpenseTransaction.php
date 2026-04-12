@@ -8,8 +8,6 @@ class ExpenseTransaction extends Model
 {
     protected $keyType = 'string';
     public $incrementing = false;
-    public $timestamps = false; // We use created_at/updated_at but handles it raw/mostly read. Let's enable timestamps if needed. Wait, we have updated_at. Let's keep it simple.
-
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
