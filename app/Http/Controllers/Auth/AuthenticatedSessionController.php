@@ -31,6 +31,17 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // If user has confirmed 2FA, redirect to challenge
+        if ($user->two_factor_confirmed_at) {
+            // Log out immediately — user must pass 2FA first
+            Auth::guard('web')->logout();
+            $request->session()->put('2fa:user_id', $user->id);
+
+            return redirect()->route('two-factor.challenge');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));

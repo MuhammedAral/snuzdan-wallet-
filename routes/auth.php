@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\GoogleOAuthController;
 
@@ -36,6 +37,12 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+
+    // 2FA Challenge (guest context — user logged out, waiting for 2FA)
+    Route::get('two-factor-challenge', [TwoFactorController::class, 'challengeForm'])
+        ->name('two-factor.challenge');
+    Route::post('two-factor-challenge', [TwoFactorController::class, 'challengeVerify'])
+        ->name('two-factor.challenge.verify');
 });
 
 Route::middleware('auth')->group(function () {
@@ -56,6 +63,11 @@ Route::middleware('auth')->group(function () {
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+
+    // 2FA Management
+    Route::post('two-factor/enable', [TwoFactorController::class, 'enable'])->name('two-factor.enable');
+    Route::post('two-factor/confirm', [TwoFactorController::class, 'confirm'])->name('two-factor.confirm');
+    Route::delete('two-factor/disable', [TwoFactorController::class, 'disable'])->name('two-factor.disable');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');

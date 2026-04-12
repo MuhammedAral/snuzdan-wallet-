@@ -56,6 +56,12 @@ Route::middleware('auth')->group(function () {
     // Düzenli İşlemler (Aşama 9)
     Route::post('/recurring-transactions', [\App\Http\Controllers\RecurringController::class, 'store'])->name('recurring.store');
     Route::delete('/recurring-transactions/{id}', [\App\Http\Controllers\RecurringController::class, 'destroy'])->name('recurring.destroy');
+
+    // Çalışma Alanları / Paylaşımlı Cüzdanlar (Aşama 10)
+    Route::get('/api/workspaces', [\App\Http\Controllers\WorkspaceController::class, 'index'])->name('api.workspaces.index');
+    Route::post('/workspaces', [\App\Http\Controllers\WorkspaceController::class, 'store'])->name('workspaces.store');
+    Route::post('/workspaces/{id}/switch', [\App\Http\Controllers\WorkspaceController::class, 'switch'])->name('workspaces.switch');
+    Route::post('/workspaces/invite', [\App\Http\Controllers\WorkspaceController::class, 'invite'])->name('workspaces.invite');
 });
 
 require __DIR__.'/auth.php';

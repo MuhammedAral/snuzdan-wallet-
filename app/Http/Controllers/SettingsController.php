@@ -10,12 +10,17 @@ class SettingsController extends Controller
 {
     public function page(Request $request)
     {
-        $user = clone $request->user();
+        $user = $request->user();
         $user->load('oauthAccounts');
+        $workspaces = $user->workspaces()->withPivot('role')->get();
 
         return Inertia::render('Settings', [
             'oauthAccounts' => $user->oauthAccounts,
-            // $page.props.auth.user is already injected by Breeze middleware.
+            'workspaces' => $workspaces,
+            'flash' => [
+                'success' => session('success'),
+                'twoFactor' => session('twoFactor'),
+            ],
         ]);
     }
 
