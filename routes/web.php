@@ -47,6 +47,15 @@ Route::middleware('auth')->group(function () {
 
     // Gelir Modülü (Akif)
     Route::get('/incomes', [\App\Http\Controllers\IncomeController::class, 'page'])->name('incomes.index');
+
+    // Hesaplar (Aşama 9)
+    Route::get('/api/accounts', [\App\Http\Controllers\AccountController::class, 'index'])->name('api.accounts.index');
+    Route::post('/accounts', [\App\Http\Controllers\AccountController::class, 'store'])->name('accounts.store');
+    Route::delete('/accounts/{id}', [\App\Http\Controllers\AccountController::class, 'destroy'])->name('accounts.destroy');
+
+    // Düzenli İşlemler (Aşama 9)
+    Route::post('/recurring-transactions', [\App\Http\Controllers\RecurringController::class, 'store'])->name('recurring.store');
+    Route::delete('/recurring-transactions/{id}', [\App\Http\Controllers\RecurringController::class, 'destroy'])->name('recurring.destroy');
 });
 
 require __DIR__.'/auth.php';

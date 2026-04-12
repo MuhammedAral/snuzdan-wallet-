@@ -17,6 +17,7 @@ class IncomeTransaction extends Model
     protected $fillable = [
         'workspace_id',
         'created_by_user_id',
+        'account_id',
         'category_id',
         'amount',
         'currency',
@@ -47,6 +48,11 @@ class IncomeTransaction extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function account()
+    {
+        return $this->belongsTo(Account::class);
     }
 
     /**
