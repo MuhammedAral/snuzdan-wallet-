@@ -22,11 +22,11 @@ interface WorkspaceData {
     pivot: { role: string };
 }
 
-interface PageProps {
-    [key: string]: unknown;
+interface SettingsPageProps extends Record<string, unknown> {
     auth: {
         user: {
             id: string;
+            name: string;
             display_name: string;
             email: string;
             email_verified: boolean;
@@ -42,11 +42,12 @@ interface PageProps {
     flash: {
         success?: string;
         twoFactor?: { secret: string; qrCodeUrl: string };
-    }
+    };
+    errors: Record<string, string>;
 }
 
 export default function SettingsPage() {
-    const { auth, oauthAccounts, workspaces, flash, errors: pageErrors } = usePage<PageProps>().props;
+    const { auth, oauthAccounts, workspaces, flash, errors: pageErrors } = usePage<SettingsPageProps>().props;
 
     return (
         <AuthenticatedLayout
@@ -95,7 +96,7 @@ export default function SettingsPage() {
 }
 
 function ProfileForm() {
-    const user = usePage<PageProps>().props.auth.user;
+    const user = usePage<SettingsPageProps>().props.auth.user;
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
         display_name: user.display_name || '',
         avatar_url: user.avatar_url || '',
@@ -159,7 +160,7 @@ function ProfileForm() {
 }
 
 function BaseCurrencySelector() {
-    const user = usePage<PageProps>().props.auth.user;
+    const user = usePage<SettingsPageProps>().props.auth.user;
     const { data, setData, patch, processing } = useForm({
         base_currency: user.base_currency || 'TRY',
     });
@@ -212,7 +213,7 @@ function BaseCurrencySelector() {
 }
 
 function ThemeToggle() {
-    const user = usePage<PageProps>().props.auth.user;
+    const user = usePage<SettingsPageProps>().props.auth.user;
     const { data, setData, patch, processing } = useForm({
         theme: user.theme || 'dark',
     });
@@ -265,7 +266,7 @@ function ThemeToggle() {
 }
 
 function TwoFactorSection({ twoFactorData }: { twoFactorData?: { secret: string; qrCodeUrl: string } }) {
-    const user = usePage<PageProps>().props.auth.user;
+    const user = usePage<SettingsPageProps>().props.auth.user;
     const is2faActive = !!user.two_factor_confirmed_at;
     const [showSetup, setShowSetup] = useState(!!twoFactorData);
 
@@ -369,7 +370,7 @@ function TwoFactorSection({ twoFactorData }: { twoFactorData?: { secret: string;
 
 function LinkedAccountsList({ oauthAccounts }: { oauthAccounts: OauthAccount[] }) {
     const { delete: destroy, processing } = useForm();
-    const user = usePage<PageProps>().props.auth.user;
+    const user = usePage<SettingsPageProps>().props.auth.user;
 
     const removeAccount = (id: string, provider: string) => {
         if (confirm(`Emin misiniz? ${provider} bağlantısı kaldırılacak.`)) {
@@ -428,7 +429,7 @@ function LinkedAccountsList({ oauthAccounts }: { oauthAccounts: OauthAccount[] }
 }
 
 function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
-    const user = usePage<PageProps>().props.auth.user;
+    const user = usePage<SettingsPageProps>().props.auth.user;
     const [showCreate, setShowCreate] = useState(false);
     const [showInvite, setShowInvite] = useState(false);
 

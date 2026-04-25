@@ -1,4 +1,6 @@
+// @ts-ignore — laravel-echo types not installed
 import Echo from 'laravel-echo';
+// @ts-ignore — pusher-js types not installed
 import Pusher from 'pusher-js';
 
 /**

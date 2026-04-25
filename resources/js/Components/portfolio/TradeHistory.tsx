@@ -55,6 +55,7 @@ const TradeHistoryRow: React.FC<{ transaction: InvestmentTransaction }> = ({ tra
     const [showVoidModal, setShowVoidModal] = React.useState(false);
 
     const handleVoid = () => {
+        setData('reason', voidReason);
         post(route('investments.void', { id: transaction.id }), {
             onSuccess: () => setShowVoidModal(false),
         });

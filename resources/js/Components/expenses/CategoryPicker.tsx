@@ -78,7 +78,7 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
                         key={cat.id}
                         type="button"
                         onClick={() => onChange(cat.id)}
-                        className={`relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
+                        className={`select-none relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
                             selectedId === cat.id 
                             ? 'bg-indigo-500/20 border-indigo-500 ring-1 ring-indigo-500' // Selected
                             : 'bg-slate-900/50 border-slate-700 hover:bg-slate-800 hover:border-slate-600' // Default
@@ -102,7 +102,7 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
                 <button
                     type="button"
                     onClick={() => setIsModalOpen(true)}
-                    className="flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-slate-700 hover:border-slate-500 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors"
+                    className="select-none flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-slate-700 hover:border-slate-500 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors"
                 >
                     <Plus size={24} className="mb-1" />
                     <span className="text-xs font-medium text-center">Ekle</span>
