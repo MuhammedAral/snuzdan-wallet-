@@ -51,13 +51,11 @@ const TradeHistory: React.FC<TradeHistoryProps> = ({ transactions }) => {
  * TradeHistoryRow — Tek işlem satırı
  */
 const TradeHistoryRow: React.FC<{ transaction: InvestmentTransaction }> = ({ transaction }) => {
-    const { post, processing } = useForm({ reason: '' });
+    const { data, setData, post, processing } = useForm({ reason: '' });
     const [showVoidModal, setShowVoidModal] = React.useState(false);
-    const [voidReason, setVoidReason] = React.useState('');
 
     const handleVoid = () => {
         post(route('investments.void', { id: transaction.id }), {
-            data: { reason: voidReason } as any,
             onSuccess: () => setShowVoidModal(false),
         });
     };
@@ -122,8 +120,8 @@ const TradeHistoryRow: React.FC<{ transaction: InvestmentTransaction }> = ({ tra
                             </p>
                             <input
                                 type="text"
-                                value={voidReason}
-                                onChange={(e) => setVoidReason(e.target.value)}
+                                value={data.reason}
+                                onChange={(e) => setData('reason', e.target.value)}
                                 placeholder="İptal sebebi yazın..."
                                 className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm mb-2"
                             />
@@ -136,7 +134,7 @@ const TradeHistoryRow: React.FC<{ transaction: InvestmentTransaction }> = ({ tra
                                 </button>
                                 <button
                                     onClick={handleVoid}
-                                    disabled={processing || !voidReason}
+                                    disabled={processing || !data.reason}
                                     className="px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-all"
                                 >
                                     İptal Et

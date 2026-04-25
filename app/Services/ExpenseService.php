@@ -14,6 +14,10 @@ class ExpenseService
      */
     public function getExpensesForWorkspace(string $workspaceId, ?string $month = null)
     {
+        if (!$workspaceId) {
+            return collect();
+        }
+
         $query = ExpenseTransaction::with(['category', 'creator'])
             ->where('workspace_id', $workspaceId)
             ->active()

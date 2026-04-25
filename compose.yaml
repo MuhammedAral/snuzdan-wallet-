@@ -98,6 +98,15 @@ services:
         depends_on:
             - pgsql
             - redis
+    pgadmin:
+        image: 'dpage/pgadmin4'
+        ports:
+            - '16543:80'
+        environment:
+            PGADMIN_DEFAULT_EMAIL: 'admin@snuzdan.test'
+            PGADMIN_DEFAULT_PASSWORD: 'password'
+        networks:
+            - sail
 networks:
     sail:
         driver: bridge

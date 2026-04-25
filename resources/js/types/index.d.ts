@@ -1,9 +1,8 @@
 export interface User {
     id: string;
-    name: string;
     display_name: string;
     email: string;
-    email_verified_at?: string;
+    email_verified: boolean;
     avatar_url: string | null;
     base_currency: string;
     theme: string;

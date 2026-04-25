@@ -23,11 +23,13 @@ interface WorkspaceData {
 }
 
 interface PageProps {
+    [key: string]: unknown;
     auth: {
         user: {
             id: string;
             display_name: string;
             email: string;
+            email_verified: boolean;
             avatar_url: string | null;
             base_currency: string;
             theme: string;

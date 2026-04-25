@@ -26,6 +26,15 @@ class DashboardController extends Controller
     public function summary(): JsonResponse
     {
         $workspaceId = Auth::user()->current_workspace_id;
+
+        if (!$workspaceId) {
+            return response()->json([
+                'monthly_income' => 0,
+                'monthly_expense' => 0,
+                'monthly_balance' => 0,
+            ]);
+        }
+
         $currentMonth = date('Y-m');
 
         // Aylık toplam gider
@@ -53,6 +62,10 @@ class DashboardController extends Controller
     public function recentActivity(): JsonResponse
     {
         $workspaceId = Auth::user()->current_workspace_id;
+
+        if (!$workspaceId) {
+            return response()->json([]);
+        }
 
         $expenses = ExpenseTransaction::with('category')
             ->where('workspace_id', $workspaceId)

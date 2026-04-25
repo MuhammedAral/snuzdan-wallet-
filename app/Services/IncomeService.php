@@ -14,6 +14,10 @@ class IncomeService
      */
     public function getIncomesForWorkspace(string $workspaceId, ?string $month = null)
     {
+        if (!$workspaceId) {
+            return collect();
+        }
+
         $query = IncomeTransaction::with(['category', 'creator'])
             ->where('workspace_id', $workspaceId)
             ->active()
