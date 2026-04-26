@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { Plus, Check } from 'lucide-react';
+import { Plus, Check, X } from 'lucide-react';
 import Modal from '@/Components/Modal';
 
 interface Category {
@@ -21,6 +21,7 @@ interface CategoryPickerProps {
 export default function CategoryPicker({ direction, selectedId, onChange }: CategoryPickerProps) {
     const queryClient = useQueryClient();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
     
     // New category state
     const [newName, setNewName] = useState('');
@@ -54,6 +55,25 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
         }
     });
 
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
+            const { data } = await axios.delete(`/api/categories/${id}`);
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['categories', direction] });
+            setDeleteTarget(null);
+            // Eğer silinen kategori seçiliyse seçimi kaldır
+            if (deleteTarget && selectedId === deleteTarget.id) {
+                onChange('');
+            }
+        },
+        onError: (err: any) => {
+            setError(err.response?.data?.message || 'Silme işlemi başarısız.');
+            setDeleteTarget(null);
+        }
+    });
+
     const handleCreate = (e: React.FormEvent) => {
         e.preventDefault();
         createMutation.mutate({
@@ -62,6 +82,17 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
             color: newColor,
             direction,
         });
+    };
+
+    const handleDeleteClick = (e: React.MouseEvent, cat: Category) => {
+        e.stopPropagation(); // Kategori seçimini engelle
+        setDeleteTarget(cat);
+    };
+
+    const confirmDelete = () => {
+        if (deleteTarget) {
+            deleteMutation.mutate(deleteTarget.id);
+        }
     };
 
     if (isLoading) {
@@ -78,13 +109,24 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
                         key={cat.id}
                         type="button"
                         onClick={() => onChange(cat.id)}
-                        className={`select-none relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
+                        className={`group/cat select-none relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
                             selectedId === cat.id 
-                            ? 'bg-indigo-500/20 border-indigo-500 ring-1 ring-indigo-500' // Selected
-                            : 'bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-700 hover:bg-gray-100 dark:bg-slate-800 hover:border-slate-600' // Default
+                            ? 'bg-indigo-500/20 border-indigo-500 ring-1 ring-indigo-500'
+                            : 'bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 hover:border-slate-600'
                         }`}
                         style={{ boxShadow: selectedId === cat.id && cat.color ? `0 0 10px ${cat.color}40` : 'none' }}
                     >
+                        {/* Silme butonu — sadece CUSTOM kategorilerde, hover'da gösterilir */}
+                        {cat.cat_type === 'CUSTOM' && (
+                            <div
+                                onClick={(e) => handleDeleteClick(e, cat)}
+                                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-rose-500 hover:bg-rose-400 rounded-full flex items-center justify-center opacity-0 group-hover/cat:opacity-100 transition-opacity cursor-pointer shadow-sm z-10"
+                                title="Kategoriyi Sil"
+                            >
+                                <X size={11} className="text-white" strokeWidth={3} />
+                            </div>
+                        )}
+
                         <span className="text-2xl mb-1">{cat.icon}</span>
                         <span className="text-xs font-medium text-gray-700 dark:text-slate-300 text-center truncate w-full" title={cat.name}>
                             {cat.name}
@@ -102,12 +144,53 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
                 <button
                     type="button"
                     onClick={() => setIsModalOpen(true)}
-                    className="select-none flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-gray-300 dark:border-slate-700 hover:border-slate-500 hover:bg-gray-100 dark:bg-slate-800/50 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:text-slate-200 transition-colors"
+                    className="select-none flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-gray-300 dark:border-slate-700 hover:border-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800/50 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200 transition-colors"
                 >
                     <Plus size={24} className="mb-1" />
                     <span className="text-xs font-medium text-center">Ekle</span>
                 </button>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <Modal show={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
+                <div className="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-full bg-rose-500/10 flex items-center justify-center">
+                            <X size={20} className="text-rose-400" />
+                        </div>
+                        <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+                            Kategoriyi Sil
+                        </h2>
+                    </div>
+                    
+                    <p className="text-sm text-gray-600 dark:text-slate-400 mb-2">
+                        <span className="font-semibold text-gray-800 dark:text-slate-200">
+                            {deleteTarget?.icon} {deleteTarget?.name}
+                        </span> kategorisini silmek istediğinize emin misiniz?
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-slate-500 mb-6">
+                        Kategori pasife alınacaktır. Mevcut kayıtlarınız etkilenmez.
+                    </p>
+
+                    <div className="flex justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => setDeleteTarget(null)}
+                            className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                        >
+                            Vazgeç
+                        </button>
+                        <button
+                            type="button"
+                            onClick={confirmDelete}
+                            disabled={deleteMutation.isPending}
+                            className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-sm font-medium disabled:opacity-70 transition-colors"
+                        >
+                            {deleteMutation.isPending ? 'Siliniyor...' : 'Evet, Sil'}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
 
             {/* New Category Modal */}
             <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
@@ -164,7 +247,7 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
                             <button
                                 type="button"
                                 onClick={() => setIsModalOpen(false)}
-                                className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:text-white transition-colors"
+                                className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                             >
                                 İptal
                             </button>

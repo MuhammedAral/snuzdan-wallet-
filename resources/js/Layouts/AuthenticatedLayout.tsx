@@ -45,6 +45,12 @@ export default function Authenticated({
                                 >
                                     Giderler
                                 </NavLink>
+                                <NavLink
+                                    href={route('portfolio.index')}
+                                    active={route().current('portfolio.index')}
+                                >
+                                    Portföy
+                                </NavLink>
                             </div>
                         </div>
 
@@ -153,6 +159,24 @@ export default function Authenticated({
                             active={route().current('dashboard')}
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('incomes.index')}
+                            active={route().current('incomes.index')}
+                        >
+                            Gelirler
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('expenses.index')}
+                            active={route().current('expenses.index')}
+                        >
+                            Giderler
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('portfolio.index')}
+                            active={route().current('portfolio.index')}
+                        >
+                            Portföy
                         </ResponsiveNavLink>
                     </div>
 
