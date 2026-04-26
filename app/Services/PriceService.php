@@ -107,6 +107,13 @@ class PriceService
         $cacheKey = "price:{$asset->id}";
         Cache::put($cacheKey, $price, self::CACHE_TTL);
 
+        // Canlı yayın (WebSocket)
+        \App\Events\PriceUpdated::dispatch(
+            $asset->symbol,
+            (float) $price,
+            0 // TODO: 24h değişimi hesapla veya api'dan al
+        );
+
         return $price;
     }
 

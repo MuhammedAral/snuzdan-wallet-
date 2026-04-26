@@ -112,6 +112,13 @@ Route::middleware('auth:sanctum')->group(function () {
         // Redis cache güncelle
         \Illuminate\Support\Facades\Cache::put("price:{$id}", $validated['price'], 60);
 
+        // Canlı yayın (WebSocket) - Tüm bağlı istemcilere fiyatın güncellendiğini haber ver
+        \App\Events\PriceUpdated::dispatch(
+            $asset->symbol,
+            (float) $validated['price'],
+            0 // Manuel güncellemede 24h değişimi bilinemediğinden 0 geçiyoruz
+        );
+
         return response()->json([
             'message' => 'Fiyat güncellendi.',
             'price'   => (float) $validated['price'],

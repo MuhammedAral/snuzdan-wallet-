@@ -71,9 +71,12 @@ const PositionCard: React.FC<PositionCardProps> = ({ position }) => {
                 </div>
                 <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Güncel Fiyat</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        ${formatCurrency(position.current_price)}
-                    </p>
+                    <LivePriceTicker 
+                        symbol={position.symbol} 
+                        initialPrice={position.current_price} 
+                        showChange={false}
+                        className="-ml-2"
+                    />
                 </div>
                 <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Toplam Değer</p>
