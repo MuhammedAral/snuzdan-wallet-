@@ -48,8 +48,8 @@ export default function AiTransactionInput({ onParsed }: AiTransactionInputProps
                     <Sparkles size={20} />
                 </div>
                 <div>
-                    <h4 className="text-white font-medium text-sm">Yapay Zeka Asistanı</h4>
-                    <p className="text-slate-400 text-xs mt-0.5">"Dün markette 850 TL harcadım" gibi yazın, o halletsin.</p>
+                    <h4 className="text-gray-900 dark:text-white font-medium text-sm">Yapay Zeka Asistanı</h4>
+                    <p className="text-gray-600 dark:text-slate-400 text-xs mt-0.5">"Dün markette 850 TL harcadım" gibi yazın, o halletsin.</p>
                 </div>
             </div>
 
@@ -60,7 +60,7 @@ export default function AiTransactionInput({ onParsed }: AiTransactionInputProps
                     onChange={(e) => setPrompt(e.target.value)}
                     placeholder="Gelir/gider detayını buraya yaz..."
                     disabled={isLoading}
-                    className="w-full bg-slate-950/50 border border-slate-800 text-slate-200 text-sm rounded-xl py-3 pl-4 pr-12 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none placeholder:text-slate-600 transition-all disabled:opacity-50"
+                    className="w-full bg-gray-50 dark:bg-slate-950/50 border border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-200 text-sm rounded-xl py-3 pl-4 pr-12 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none placeholder:text-slate-600 transition-all disabled:opacity-50"
                 />
                 
                 <button

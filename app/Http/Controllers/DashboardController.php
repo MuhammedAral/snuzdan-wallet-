@@ -37,17 +37,26 @@ class DashboardController extends Controller
 
         $currentMonth = date('Y-m');
 
-        // Aylık toplam gider
-        $totalExpense = ExpenseTransaction::where('workspace_id', $workspaceId)
+        // İşlemleri çek (Kurları hesaplamak için koleksiyon alıyoruz)
+        $expenses = ExpenseTransaction::where('workspace_id', $workspaceId)
             ->active()
             ->whereRaw("TO_CHAR(expense_date, 'YYYY-MM') = ?", [$currentMonth])
-            ->sum('amount');
+            ->get();
 
-        // Aylık toplam gelir
-        $totalIncome = IncomeTransaction::where('workspace_id', $workspaceId)
+        $incomes = IncomeTransaction::where('workspace_id', $workspaceId)
             ->active()
             ->whereRaw("TO_CHAR(income_date, 'YYYY-MM') = ?", [$currentMonth])
-            ->sum('amount');
+            ->get();
+
+        $totalExpense = 0;
+        foreach ($expenses as $exp) {
+            $totalExpense += $this->convertToTry($exp->amount, $exp->currency);
+        }
+
+        $totalIncome = 0;
+        foreach ($incomes as $inc) {
+            $totalIncome += $this->convertToTry($inc->amount, $inc->currency);
+        }
 
         return response()->json([
             'monthly_income' => (float) $totalIncome,
@@ -109,5 +118,31 @@ class DashboardController extends Controller
         $activities = $expenses->concat($incomes)->sortByDesc('created_at')->take(10)->values();
 
         return response()->json($activities);
+    }
+
+    /**
+     * Convert an amount to TRY based on latest FxRateSnapshot or fallback.
+     */
+    private function convertToTry($amount, $currency)
+    {
+        if ($currency === 'TRY') {
+            return (float) $amount;
+        }
+
+        $rateRecord = \App\Models\FxRateSnapshot::where('base_currency', $currency)
+            ->where('quote_currency', 'TRY')
+            ->orderByDesc('fetched_at')
+            ->first();
+
+        // Fallbacks
+        $fallbackRates = [
+            'USD' => 32.50,
+            'EUR' => 35.00,
+            'GBP' => 40.50
+        ];
+
+        $rate = $rateRecord ? $rateRecord->rate : ($fallbackRates[$currency] ?? 1.0);
+
+        return (float) $amount * $rate;
     }
 }

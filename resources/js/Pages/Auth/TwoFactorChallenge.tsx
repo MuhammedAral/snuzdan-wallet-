@@ -23,7 +23,7 @@ export default function TwoFactorChallenge() {
                 <div className="w-full max-w-md">
 
                     {/* Card */}
-                    <div className="bg-slate-900/80 backdrop-blur-lg border border-slate-800 rounded-3xl p-8 shadow-2xl">
+                    <div className="bg-white dark:bg-slate-900/80 backdrop-blur-lg border border-gray-200 dark:border-slate-800 rounded-3xl p-8 shadow-2xl">
 
                         {/* Icon */}
                         <div className="flex justify-center mb-6">
@@ -32,10 +32,10 @@ export default function TwoFactorChallenge() {
                             </div>
                         </div>
 
-                        <h1 className="text-2xl font-bold text-white text-center mb-2">
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white text-center mb-2">
                             İki Adımlı Doğrulama
                         </h1>
-                        <p className="text-center text-slate-400 text-sm mb-8">
+                        <p className="text-center text-gray-600 dark:text-slate-400 text-sm mb-8">
                             Google Authenticator uygulamanızdaki 6 haneli kodu girin veya kurtarma kodunuzu kullanın.
                         </p>
 
@@ -48,7 +48,7 @@ export default function TwoFactorChallenge() {
                                     autoComplete="one-time-code"
                                     autoFocus
                                     placeholder="000000"
-                                    className="block w-full text-center text-2xl tracking-[0.5em] bg-slate-950 border-slate-700 text-white focus:border-indigo-500 focus:ring-indigo-500 rounded-xl py-4"
+                                    className="block w-full text-center text-2xl tracking-[0.5em] bg-gray-50 dark:bg-slate-950 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 rounded-xl py-4"
                                     value={data.code}
                                     onChange={(e) => setData('code', e.target.value.replace(/\D/g, '').slice(0, 10))}
                                 />

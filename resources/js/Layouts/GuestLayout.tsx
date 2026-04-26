@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export default function Guest({ children }: PropsWithChildren) {
     return (
-        <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-slate-950 text-slate-100 selection:bg-indigo-500/30">
+        <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 selection:bg-indigo-500/30">
             {/* Ambient Background Glows */}
             <div className="absolute top-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-indigo-600/20 blur-[120px]" />
             <div className="absolute right-[-10%] bottom-[-10%] h-[600px] w-[600px] rounded-full bg-fuchsia-600/20 blur-[120px]" />
@@ -27,7 +27,7 @@ export default function Guest({ children }: PropsWithChildren) {
                 transition={{ duration: 0.5, delay: 0.1 }}
                 className="z-10 w-full px-6 sm:max-w-md sm:px-0"
             >
-                <div className="backdrop-blur-xl bg-slate-900/60 border border-slate-700/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-2xl overflow-hidden relative">
+                <div className="backdrop-blur-xl bg-white dark:bg-slate-900/60 border border-gray-300 dark:border-slate-700/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] rounded-2xl overflow-hidden relative">
                     {/* Inner subtle glow to the card */}
                     <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent opacity-20 pointer-events-none" />
                     

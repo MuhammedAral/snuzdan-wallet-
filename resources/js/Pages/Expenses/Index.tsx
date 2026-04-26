@@ -6,6 +6,11 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import CategoryPicker from '@/Components/expenses/CategoryPicker';
 import AiTransactionInput from '@/Components/ai/AiTransactionInput';
 import { Save, AlertCircle, Ban } from 'lucide-react';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { tr } from 'date-fns/locale/tr';
+import 'react-datepicker/dist/react-datepicker.css';
+
+registerLocale('tr', tr);
 
 interface Expense {
     id: string;
@@ -28,7 +33,7 @@ export default function ExpensesIndex() {
     const [amount, setAmount] = useState('');
     const [currency, setCurrency] = useState('TRY');
     const [categoryId, setCategoryId] = useState<string | null>(null);
-    const [expenseDate, setExpenseDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [expenseDate, setExpenseDate] = useState<Date>(new Date());
     const [notes, setNotes] = useState('');
     const [error, setError] = useState('');
 
@@ -84,7 +89,7 @@ export default function ExpensesIndex() {
             amount,
             currency,
             category_id: categoryId,
-            expense_date: expenseDate,
+            expense_date: expenseDate.toISOString().split('T')[0],
             notes
         });
     };
@@ -93,7 +98,7 @@ export default function ExpensesIndex() {
         if (parsed.type === 'EXPENSE') {
             setAmount(parsed.amount.toString());
             setCurrency(parsed.currency || 'TRY');
-            setExpenseDate(parsed.date || new Date().toISOString().split('T')[0]);
+            setExpenseDate(parsed.date ? new Date(parsed.date) : new Date());
             setNotes(parsed.note || '');
             // Not: category_name geldi, kullanıcı CategoryPicker'dan eliyle seçmeli ya da API otomatik backend'de eşleştirmeli. Şimdilik not olarak basıyoruz.
             if(parsed.category_name) {
@@ -105,7 +110,7 @@ export default function ExpensesIndex() {
     };
 
     return (
-        <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-slate-100 leading-tight">Gider Yönetimi</h2>}>
+        <AuthenticatedLayout header={<h2 className="font-semibold text-xl text-gray-900 dark:text-slate-100 leading-tight">Gider Yönetimi</h2>}>
             <Head title="Giderler" />
 
             <div className="py-12">
@@ -116,9 +121,9 @@ export default function ExpensesIndex() {
                         {/* Yapay Zeka Modülü */}
                         <AiTransactionInput onParsed={handleAiParsed} />
 
-                        <div className="bg-slate-900 overflow-hidden shadow-sm shadow-slate-900/50 sm:rounded-2xl border border-slate-800">
+                        <div className="bg-white dark:bg-slate-900 overflow-hidden shadow-sm shadow-slate-900/50 sm:rounded-2xl border border-gray-200 dark:border-slate-800">
                             <div className="p-6">
-                                <h3 className="text-lg font-medium text-white mb-6">Manuel Gider Ekle</h3>
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Manuel Gider Ekle</h3>
 
                                 {error && (
                                     <div className="mb-6 bg-rose-500/10 border border-rose-500/20 rounded-xl p-4 flex gap-3 text-rose-400">
@@ -130,23 +135,23 @@ export default function ExpensesIndex() {
                                 <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                                     <div className="flex gap-3">
                                         <div className="flex-1">
-                                            <label className="block text-sm font-medium text-slate-400 mb-1">Tutar</label>
+                                            <label className="block text-sm font-medium text-gray-600 dark:text-slate-400 mb-1">Tutar</label>
                                             <input 
                                                 type="number"
                                                 step="0.01"
                                                 value={amount}
                                                 onChange={e => setAmount(e.target.value)}
-                                                className="bg-slate-950/50 border-slate-800 text-slate-200 text-lg rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full outline-none transition-all py-3 px-4"
+                                                className="bg-gray-50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-200 text-lg rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full outline-none transition-all py-3 px-4"
                                                 placeholder="0.00"
                                                 required
                                             />
                                         </div>
                                         <div className="w-24">
-                                            <label className="block text-sm font-medium text-slate-400 mb-1">Döviz</label>
+                                            <label className="block text-sm font-medium text-gray-600 dark:text-slate-400 mb-1">Döviz</label>
                                             <select
                                                 value={currency}
                                                 onChange={e => setCurrency(e.target.value)}
-                                                className="bg-slate-950/50 border-slate-800 text-slate-200 text-lg rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full outline-none transition-all py-3 px-4"
+                                                className="bg-gray-50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-200 text-lg rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full outline-none transition-all py-3 px-4"
                                             >
                                                 <option value="TRY">TRY</option>
                                                 <option value="USD">USD</option>
@@ -164,23 +169,25 @@ export default function ExpensesIndex() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-400 mb-1">Tarih</label>
-                                        <input 
-                                            type="date"
-                                            value={expenseDate}
-                                            onChange={e => setExpenseDate(e.target.value)}
-                                            className="bg-slate-950/50 border-slate-800 text-slate-200 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3"
+                                        <label className="block text-sm font-medium text-gray-600 dark:text-slate-400 mb-1">Tarih</label>
+                                        <DatePicker
+                                            selected={expenseDate}
+                                            onChange={(date: Date | null) => setExpenseDate(date || new Date())}
+                                            dateFormat="dd.MM.yyyy"
+                                            locale="tr"
+                                            className="bg-gray-50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 transition-shadow"
+                                            wrapperClassName="w-full"
                                             required
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-400 mb-1">Notlar (Opsiyonel)</label>
+                                        <label className="block text-sm font-medium text-gray-600 dark:text-slate-400 mb-1">Notlar (Opsiyonel)</label>
                                         <textarea
                                             value={notes}
                                             onChange={e => setNotes(e.target.value)}
                                             rows={2}
-                                            className="bg-slate-950/50 border-slate-800 text-slate-200 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 resize-none"
+                                            className="bg-gray-50 dark:bg-slate-950/50 border-gray-200 dark:border-slate-800 text-gray-800 dark:text-slate-200 text-sm rounded-xl focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 resize-none"
                                             placeholder="Detaylar..."
                                         />
                                     </div>
@@ -188,7 +195,7 @@ export default function ExpensesIndex() {
                                     <button
                                         type="submit"
                                         disabled={createMutation.isPending}
-                                        className="w-full mt-2 text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 font-medium rounded-xl text-sm px-5 py-3.5 text-center flex items-center justify-center gap-2 transition-all disabled:opacity-70"
+                                        className="w-full mt-2 text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 font-medium rounded-xl text-sm px-5 py-3.5 text-center flex items-center justify-center gap-2 transition-all disabled:opacity-70"
                                     >
                                         {createMutation.isPending ? 'Kaydediliyor...' : <><Save size={18} /> Kaydet</>}
                                     </button>
@@ -199,9 +206,9 @@ export default function ExpensesIndex() {
 
                     {/* Right: Ledger Data Table */}
                     <div className="w-full lg:w-2/3">
-                        <div className="bg-slate-900 shadow-sm shadow-slate-900/50 sm:rounded-2xl border border-slate-800 h-full flex flex-col">
-                            <div className="px-6 py-5 border-b border-slate-800 flex justify-between items-center">
-                                <h3 className="text-lg font-medium text-white">Gider Geçmişi</h3>
+                        <div className="bg-white dark:bg-slate-900 shadow-sm shadow-slate-900/50 sm:rounded-2xl border border-gray-200 dark:border-slate-800 h-full flex flex-col">
+                            <div className="px-6 py-5 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Gider Geçmişi</h3>
                             </div>
                             
                             <div className="flex-1 overflow-auto p-0">
@@ -215,7 +222,7 @@ export default function ExpensesIndex() {
                                 ) : (
                                     <table className="w-full text-left border-collapse">
                                         <thead>
-                                            <tr className="border-b border-slate-800 bg-slate-900/50 text-slate-400 text-xs uppercase tracking-wider">
+                                            <tr className="border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 text-gray-600 dark:text-slate-400 text-xs uppercase tracking-wider">
                                                 <th className="px-6 py-4 font-medium">Tarih</th>
                                                 <th className="px-6 py-4 font-medium">Kategori</th>
                                                 <th className="px-6 py-4 font-medium text-right">Tutar</th>
@@ -225,8 +232,8 @@ export default function ExpensesIndex() {
                                         </thead>
                                         <tbody className="divide-y divide-slate-800/50 text-sm">
                                             {expenses.map((exp: Expense) => (
-                                                <tr key={exp.id} className={`group transition-colors hover:bg-slate-800/30 ${exp.is_void ? 'opacity-50' : ''}`}>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-slate-300">
+                                                <tr key={exp.id} className={`group transition-colors hover:bg-gray-100 dark:bg-slate-800/30 ${exp.is_void ? 'opacity-50' : ''}`}>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-gray-700 dark:text-slate-300">
                                                         {new Date(exp.expense_date).toLocaleDateString('tr-TR')}
                                                     </td>
                                                     <td className="px-6 py-4">
@@ -238,7 +245,7 @@ export default function ExpensesIndex() {
                                                                 {exp.category?.icon || '📌'}
                                                             </div>
                                                             <div>
-                                                                <div className={`font-medium ${exp.is_void ? 'line-through text-slate-500' : 'text-slate-200'}`}>
+                                                                <div className={`font-medium ${exp.is_void ? 'line-through text-slate-500' : 'text-gray-800 dark:text-slate-200'}`}>
                                                                     {exp.category?.name || 'Bilinmiyor'}
                                                                 </div>
                                                                 {exp.notes && (
@@ -254,7 +261,7 @@ export default function ExpensesIndex() {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {exp.is_void ? (
-                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+                                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 border border-gray-300 dark:border-slate-700">
                                                                 İptal Edildi
                                                             </span>
                                                         ) : (
@@ -272,7 +279,7 @@ export default function ExpensesIndex() {
                                                                     }
                                                                 }}
                                                                 disabled={voidMutation.isPending}
-                                                                className="text-slate-500 hover:text-rose-400 transition-colors p-2 rounded-lg hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                                                                className="text-slate-500 hover:text-rose-400 transition-colors p-2 rounded-lg hover:bg-gray-100 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500/50"
                                                                 title="İşlemi İptal Et (Void)"
                                                             >
                                                                 <Ban size={18} />

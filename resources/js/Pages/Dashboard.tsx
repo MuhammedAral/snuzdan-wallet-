@@ -49,7 +49,7 @@ export default function Dashboard() {
 
     return (
         <AuthenticatedLayout
-            header={<h2 className="font-semibold text-xl text-slate-100 leading-tight">Genel Bakış</h2>}
+            header={<h2 className="font-semibold text-xl text-gray-900 dark:text-slate-100 leading-tight">Genel Bakış</h2>}
         >
             <Head title="Dashboard" />
 
@@ -68,24 +68,24 @@ export default function Dashboard() {
                                 <div className="p-2.5 bg-indigo-500/20 rounded-xl text-indigo-400">
                                     <Wallet size={24} />
                                 </div>
-                                <h3 className="text-slate-300 font-medium">Toplam Net Varlık</h3>
+                                <h3 className="text-gray-700 dark:text-slate-300 font-medium">Toplam Net Varlık</h3>
                             </div>
-                            <div className="text-4xl font-bold text-white mb-2">
+                            <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
                                 {formatMoney(netWorth)}
                             </div>
-                            <p className="text-sm text-slate-400">Portföy Yatırımları + Nakit Bakiye</p>
+                            <p className="text-sm text-gray-600 dark:text-slate-400">Portföy Yatırımları + Nakit Bakiye</p>
                         </div>
 
                         {/* 2. Aylık Bilanço */}
-                        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md relative overflow-hidden">
+                        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-md relative overflow-hidden">
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-slate-800 rounded-xl text-slate-300">
+                                    <div className="p-2.5 bg-gray-100 dark:bg-slate-800 rounded-xl text-gray-700 dark:text-slate-300">
                                         <Activity size={24} />
                                     </div>
-                                    <h3 className="text-slate-300 font-medium">Bu Ayki Bilanço</h3>
+                                    <h3 className="text-gray-700 dark:text-slate-300 font-medium">Bu Ayki Bilanço</h3>
                                 </div>
-                                <span className="bg-slate-800 text-xs px-2.5 py-1 rounded-md text-slate-400">TR</span>
+                                <span className="bg-gray-100 dark:bg-slate-800 text-xs px-2.5 py-1 rounded-md text-gray-600 dark:text-slate-400">TR</span>
                             </div>
                             <div className={`text-3xl font-bold mb-4 ${
                                 (summary?.monthly_balance || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
@@ -103,16 +103,16 @@ export default function Dashboard() {
                         </div>
 
                         {/* 3. Portföy Durumu (Mock/Muhammed) */}
-                        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md relative overflow-hidden">
+                        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-md relative overflow-hidden">
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-slate-800 rounded-xl text-slate-300">
+                                    <div className="p-2.5 bg-gray-100 dark:bg-slate-800 rounded-xl text-gray-700 dark:text-slate-300">
                                         <Box size={24} />
                                     </div>
-                                    <h3 className="text-slate-300 font-medium">Yatırım Portföyü</h3>
+                                    <h3 className="text-gray-700 dark:text-slate-300 font-medium">Yatırım Portföyü</h3>
                                 </div>
                             </div>
-                            <div className="text-3xl font-bold text-white mb-4">
+                            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                                 {formatMoney(portfolio?.total_value || 0)}
                             </div>
                             <div className="flex items-center gap-2">
@@ -132,17 +132,17 @@ export default function Dashboard() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         
                         {/* Sol Grafik (CSS Custom Bar) */}
-                        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl shadow-md p-6">
-                            <h3 className="text-lg font-medium text-white mb-6">Aylık Para Akışı Dağılımı</h3>
+                        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-md p-6">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">Aylık Para Akışı Dağılımı</h3>
                             
                             <div className="flex flex-col gap-8">
                                 {/* Gelir Bar */}
                                 <div>
                                     <div className="flex justify-between mb-2">
                                         <span className="text-sm font-medium text-emerald-400">Toplam Gelir Hacmi</span>
-                                        <span className="text-sm font-medium text-slate-300">{formatMoney(summary?.monthly_income || 0)}</span>
+                                        <span className="text-sm font-medium text-gray-700 dark:text-slate-300">{formatMoney(summary?.monthly_income || 0)}</span>
                                     </div>
-                                    <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden shadow-inner">
+                                    <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-4 overflow-hidden shadow-inner">
                                         <div className="bg-emerald-500 h-4 rounded-full transition-all duration-1000" style={{ width: '100%' }}></div>
                                     </div>
                                 </div>
@@ -151,11 +151,11 @@ export default function Dashboard() {
                                 <div>
                                     <div className="flex justify-between mb-2">
                                         <span className="text-sm font-medium text-rose-400">Tüketilen Gider Hacmi (Gelire Oranı)</span>
-                                        <span className="text-sm font-medium text-slate-300">
+                                        <span className="text-sm font-medium text-gray-700 dark:text-slate-300">
                                             {summary?.monthly_income ? `${((summary.monthly_expense / summary.monthly_income) * 100).toFixed(1)}%` : '0%'}
                                         </span>
                                     </div>
-                                    <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden flex shadow-inner">
+                                    <div className="w-full bg-gray-100 dark:bg-slate-800 rounded-full h-4 overflow-hidden flex shadow-inner">
                                         {/* CSS Segment Bar logic */}
                                         <div className="bg-gradient-to-r from-rose-600 to-rose-400 h-4 transition-all duration-1000" 
                                              style={{ width: `${Math.min(((summary?.monthly_expense || 0) / (summary?.monthly_income || 1)) * 100, 100)}%` }}>
@@ -167,10 +167,10 @@ export default function Dashboard() {
                         </div>
 
                         {/* Sağ Aktivite Akışı */}
-                        <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-md flex flex-col h-full max-h-[400px]">
-                            <div className="p-5 border-b border-slate-800">
-                                <h3 className="text-md font-medium text-white flex items-center gap-2">
-                                    <Clock size={16} className="text-slate-400"/> Son Aktiviteler
+                        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-md flex flex-col h-full max-h-[400px]">
+                            <div className="p-5 border-b border-gray-200 dark:border-slate-800">
+                                <h3 className="text-md font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                                    <Clock size={16} className="text-gray-600 dark:text-slate-400"/> Son Aktiviteler
                                 </h3>
                             </div>
                             <div className="p-0 overflow-y-auto flex-1">
@@ -181,7 +181,7 @@ export default function Dashboard() {
                                 ) : (
                                     <ul className="divide-y divide-slate-800/50">
                                         {activities.map((act: any) => (
-                                            <li key={act.id} className={`p-4 hover:bg-slate-800/30 transition-colors ${act.is_void ? 'opacity-40' : ''}`}>
+                                            <li key={act.id} className={`p-4 hover:bg-gray-100 dark:bg-slate-800/30 transition-colors ${act.is_void ? 'opacity-40' : ''}`}>
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`p-2 rounded-lg ${
@@ -190,7 +190,7 @@ export default function Dashboard() {
                                                             {act.type === 'INCOME' ? <ArrowDownRight size={16}/> : <ArrowUpRight size={16}/>}
                                                         </div>
                                                         <div>
-                                                            <p className={`text-sm font-medium ${act.is_void ? 'line-through text-slate-500' : 'text-slate-200'}`}>
+                                                            <p className={`text-sm font-medium ${act.is_void ? 'line-through text-slate-500' : 'text-gray-800 dark:text-slate-200'}`}>
                                                                 {act.category?.name || 'Bilinmiyor'}
                                                             </p>
                                                             <p className="text-xs text-slate-500">

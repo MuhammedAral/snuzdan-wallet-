@@ -29,8 +29,8 @@ export default function Login({
             <Head title="Giriş Yap" />
 
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Hoş Geldiniz</h1>
-                <p className="text-sm text-slate-400">Snuzdan hesabınıza giriş yapın</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">Hoş Geldiniz</h1>
+                <p className="text-sm text-gray-600 dark:text-slate-400">Snuzdan hesabınıza giriş yapın</p>
             </div>
 
             {status && (
@@ -41,7 +41,7 @@ export default function Login({
 
             <form onSubmit={submit} className="flex flex-col gap-5">
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="email">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1" htmlFor="email">
                         E-posta Adresi
                     </label>
                     <div className="relative">
@@ -53,7 +53,7 @@ export default function Login({
                             type="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
+                            className="bg-white dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
                             placeholder="ornek@snuzdan.test"
                             required
                         />
@@ -63,7 +63,7 @@ export default function Login({
 
                 <div>
                     <div className="flex items-center justify-between mb-1">
-                        <label className="block text-sm font-medium text-slate-300" htmlFor="password">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300" htmlFor="password">
                             Şifre
                         </label>
                         {canResetPassword && (
@@ -84,7 +84,7 @@ export default function Login({
                             type="password"
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
-                            className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
+                            className="bg-white dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
                             placeholder="••••••••"
                             required
                         />
@@ -98,9 +98,9 @@ export default function Login({
                         type="checkbox"
                         checked={data.remember}
                         onChange={(e) => setData('remember', e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 bg-slate-900/50 border-slate-700 rounded focus:ring-indigo-600 focus:ring-2 focus:ring-offset-slate-950"
+                        className="w-4 h-4 text-indigo-600 bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-700 rounded focus:ring-indigo-600 focus:ring-2 focus:ring-offset-slate-950"
                     />
-                    <label htmlFor="remember" className="text-sm font-medium text-slate-400 select-none cursor-pointer hover:text-slate-300">
+                    <label htmlFor="remember" className="text-sm font-medium text-gray-600 dark:text-slate-400 select-none cursor-pointer hover:text-gray-700 dark:text-slate-300">
                         Beni hatırla
                     </label>
                 </div>
@@ -110,7 +110,7 @@ export default function Login({
                     whileTap={{ scale: 0.98 }}
                     disabled={processing}
                     type="submit"
-                    className="w-full mt-2 text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+                    className="w-full mt-2 text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
                 >
                     {processing ? (
                         <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -122,22 +122,22 @@ export default function Login({
                 </motion.button>
 
                 <div className="relative flex items-center py-2">
-                    <div className="flex-grow border-t border-slate-700/80"></div>
+                    <div className="flex-grow border-t border-gray-300 dark:border-slate-700/80"></div>
                     <span className="flex-shrink-0 mx-4 text-slate-500 text-xs">veya</span>
-                    <div className="flex-grow border-t border-slate-700/80"></div>
+                    <div className="flex-grow border-t border-gray-300 dark:border-slate-700/80"></div>
                 </div>
 
                 <motion.a
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    href="/auth/google"
-                    className="w-full text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-600 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-3 transition-colors shadow-sm"
+                    href="/auth/google/redirect"
+                    className="w-full text-gray-800 dark:text-slate-200 bg-gray-100 dark:bg-slate-800 hover:bg-slate-700 border border-gray-300 dark:border-slate-700 hover:border-slate-600 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-3 transition-colors shadow-sm"
                 >
                     <Globe size={18} className="text-rose-400" />
                     Google ile Devam Et
                 </motion.a>
 
-                <p className="text-sm text-center text-slate-400 mt-4">
+                <p className="text-sm text-center text-gray-600 dark:text-slate-400 mt-4">
                     Hesabınız yok mu?{' '}
                     <Link href={route('register')} className="font-medium text-indigo-400 hover:text-indigo-300 underline underline-offset-2">
                         Kayıt Olun

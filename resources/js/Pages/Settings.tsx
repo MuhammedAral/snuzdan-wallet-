@@ -53,8 +53,8 @@ export default function SettingsPage() {
         <AuthenticatedLayout
             header={
                 <div className="flex items-center gap-3">
-                    <Settings className="text-slate-400" />
-                    <h2 className="font-semibold text-xl text-slate-100 leading-tight">Ayarlar & Profil</h2>
+                    <Settings className="text-gray-600 dark:text-slate-400" />
+                    <h2 className="font-semibold text-xl text-gray-900 dark:text-slate-100 leading-tight">Ayarlar & Profil</h2>
                 </div>
             }
         >
@@ -108,17 +108,17 @@ function ProfileForm() {
     };
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md">
-            <h3 className="text-lg font-medium text-white mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                 <User size={20} className="text-indigo-400" /> Profil Bilgileri
             </h3>
             
             <form onSubmit={submit} className="space-y-4">
                 <div>
-                    <InputLabel htmlFor="display_name" value="Görüntülenen Ad" className="text-slate-300" />
+                    <InputLabel htmlFor="display_name" value="Görüntülenen Ad" className="text-gray-700 dark:text-slate-300" />
                     <TextInput
                         id="display_name"
-                        className="mt-1 block w-full bg-slate-950 border-slate-700 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500"
+                        className="mt-1 block w-full bg-gray-50 dark:bg-slate-950 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-indigo-500"
                         value={data.display_name}
                         onChange={(e) => setData('display_name', e.target.value)}
                         required
@@ -127,12 +127,12 @@ function ProfileForm() {
                 </div>
 
                 <div>
-                    <InputLabel htmlFor="avatar_url" value="Avatar URL" className="text-slate-300" />
+                    <InputLabel htmlFor="avatar_url" value="Avatar URL" className="text-gray-700 dark:text-slate-300" />
                     <div className="flex gap-4 items-center mt-1">
                         {data.avatar_url ? (
-                            <img src={data.avatar_url} alt="Avatar" className="w-12 h-12 rounded-full border border-slate-700 object-cover" />
+                            <img src={data.avatar_url} alt="Avatar" className="w-12 h-12 rounded-full border border-gray-300 dark:border-slate-700 object-cover" />
                         ) : (
-                            <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700 text-slate-500">
+                            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center border border-gray-300 dark:border-slate-700 text-slate-500">
                                 <User size={24} />
                             </div>
                         )}
@@ -140,7 +140,7 @@ function ProfileForm() {
                             id="avatar_url"
                             type="url"
                             placeholder="https://..."
-                            className="block w-full bg-slate-950 border-slate-700 text-slate-100 focus:border-indigo-500 focus:ring-indigo-500"
+                            className="block w-full bg-gray-50 dark:bg-slate-950 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:border-indigo-500 focus:ring-indigo-500"
                             value={data.avatar_url}
                             onChange={(e) => setData('avatar_url', e.target.value)}
                         />
@@ -152,7 +152,7 @@ function ProfileForm() {
                     <PrimaryButton disabled={processing} className="bg-indigo-600 hover:bg-indigo-500">
                         Kaydet
                     </PrimaryButton>
-                    {recentlySuccessful && <p className="text-sm text-slate-400">Kaydedildi.</p>}
+                    {recentlySuccessful && <p className="text-sm text-gray-600 dark:text-slate-400">Kaydedildi.</p>}
                 </div>
             </form>
         </div>
@@ -179,11 +179,11 @@ function BaseCurrencySelector() {
     };
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md">
-            <h3 className="text-lg font-medium text-white mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                 <Globe size={20} className="text-emerald-400" /> Taban Para Birimi
             </h3>
-            <p className="text-sm text-slate-400 mb-6">
+            <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">
                 Tüm net varlık hesaplamaları ve genel özetler bu para birimi üzerinden gösterilecektir.
             </p>
             <div className="flex flex-col gap-3">
@@ -191,7 +191,7 @@ function BaseCurrencySelector() {
                     <label key={c.code} className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-colors ${
                         data.base_currency === c.code 
                         ? 'border-emerald-500/50 bg-emerald-500/10' 
-                        : 'border-slate-800 bg-slate-950 hover:bg-slate-800/50'
+                        : 'border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 hover:bg-gray-100 dark:bg-slate-800/50'
                     }`}>
                         <input
                             type="radio"
@@ -199,9 +199,9 @@ function BaseCurrencySelector() {
                             value={c.code}
                             checked={data.base_currency === c.code}
                             onChange={() => changeCurrency(c.code)}
-                            className="text-emerald-500 focus:ring-emerald-500 bg-slate-900 border-slate-700"
+                            className="text-emerald-500 focus:ring-emerald-500 bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700"
                         />
-                        <span className={`font-medium ${data.base_currency === c.code ? 'text-emerald-400' : 'text-slate-300'}`}>
+                        <span className={`font-medium ${data.base_currency === c.code ? 'text-emerald-400' : 'text-gray-700 dark:text-slate-300'}`}>
                             {c.code} — {c.label}
                         </span>
                     </label>
@@ -231,8 +231,8 @@ function ThemeToggle() {
     };
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md">
-            <h3 className="text-lg font-medium text-white mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                 {data.theme === 'dark' ? <Moon size={20} className="text-indigo-400"/> : <Sun size={20} className="text-amber-400"/>}
                 Tema Görünümü
             </h3>
@@ -242,7 +242,7 @@ function ThemeToggle() {
                     className={`p-4 rounded-xl border flex flex-col items-center gap-3 transition-colors ${
                         data.theme === 'dark' 
                         ? 'border-indigo-500/50 bg-indigo-500/10 text-indigo-400' 
-                        : 'border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-800/50'
+                        : 'border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800/50'
                     }`}
                 >
                     <Moon size={28} />
@@ -253,7 +253,7 @@ function ThemeToggle() {
                     className={`p-4 rounded-xl border flex flex-col items-center gap-3 transition-colors ${
                         data.theme === 'light' 
                         ? 'border-amber-500/50 bg-amber-500/10 text-amber-500' 
-                        : 'border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-800/50'
+                        : 'border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:bg-slate-800/50'
                     }`}
                 >
                     <Sun size={28} />
@@ -290,8 +290,8 @@ function TwoFactorSection({ twoFactorData }: { twoFactorData?: { secret: string;
     };
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md">
-            <h3 className="text-lg font-medium text-white mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                 <ShieldCheck size={20} className="text-amber-400" /> İki Faktörlü Doğrulama (2FA)
             </h3>
 
@@ -301,7 +301,7 @@ function TwoFactorSection({ twoFactorData }: { twoFactorData?: { secret: string;
                         <ShieldCheck size={24} className="text-emerald-400" />
                         <div>
                             <p className="text-emerald-400 font-medium">2FA Aktif</p>
-                            <p className="text-sm text-slate-400">Hesabınız iki faktörlü doğrulama ile korunuyor.</p>
+                            <p className="text-sm text-gray-600 dark:text-slate-400">Hesabınız iki faktörlü doğrulama ile korunuyor.</p>
                         </div>
                     </div>
                     <DangerButton
@@ -314,12 +314,12 @@ function TwoFactorSection({ twoFactorData }: { twoFactorData?: { secret: string;
                 </div>
             ) : twoFactorData ? (
                 <div className="space-y-6">
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-gray-600 dark:text-slate-400">
                         Google Authenticator veya benzeri bir uygulamayı açın ve aşağıdaki kodu elle girin:
                     </p>
                     
                     {/* Manual secret display */}
-                    <div className="bg-slate-950 border border-slate-700 rounded-xl p-4">
+                    <div className="bg-gray-50 dark:bg-slate-950 border border-gray-300 dark:border-slate-700 rounded-xl p-4">
                         <p className="text-xs text-slate-500 mb-1">Manuel Giriş Anahtarı:</p>
                         <p className="text-lg font-mono text-indigo-400 tracking-widest select-all">
                             {twoFactorData.secret}
@@ -327,22 +327,22 @@ function TwoFactorSection({ twoFactorData }: { twoFactorData?: { secret: string;
                     </div>
 
                     {/* QR Code URL for reference */}
-                    <div className="bg-slate-950 border border-slate-700 rounded-xl p-4">
+                    <div className="bg-gray-50 dark:bg-slate-950 border border-gray-300 dark:border-slate-700 rounded-xl p-4">
                         <p className="text-xs text-slate-500 mb-1">QR Kod URI (kopyalayıp tarayıcıda açabilirsiniz):</p>
-                        <p className="text-xs font-mono text-slate-400 break-all select-all">
+                        <p className="text-xs font-mono text-gray-600 dark:text-slate-400 break-all select-all">
                             {twoFactorData.qrCodeUrl}
                         </p>
                     </div>
 
                     <form onSubmit={handleConfirm} className="space-y-4">
                         <div>
-                            <InputLabel htmlFor="2fa_code" value="Doğrulama Kodu" className="text-slate-300" />
+                            <InputLabel htmlFor="2fa_code" value="Doğrulama Kodu" className="text-gray-700 dark:text-slate-300" />
                             <TextInput
                                 id="2fa_code"
                                 type="text"
                                 inputMode="numeric"
                                 placeholder="000000"
-                                className="mt-1 block w-full bg-slate-950 border-slate-700 text-slate-100 text-center text-xl tracking-widest focus:border-indigo-500 focus:ring-indigo-500"
+                                className="mt-1 block w-full bg-gray-50 dark:bg-slate-950 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-slate-100 text-center text-xl tracking-widest focus:border-indigo-500 focus:ring-indigo-500"
                                 value={confirmForm.data.code}
                                 onChange={(e) => confirmForm.setData('code', e.target.value.replace(/\D/g, '').slice(0, 6))}
                                 autoFocus
@@ -356,7 +356,7 @@ function TwoFactorSection({ twoFactorData }: { twoFactorData?: { secret: string;
                 </div>
             ) : (
                 <div className="space-y-4">
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-gray-600 dark:text-slate-400">
                         Google Authenticator ile hesabınıza ekstra bir güvenlik katmanı ekleyin.
                     </p>
                     <PrimaryButton onClick={handleEnable} disabled={enableForm.processing} className="bg-amber-600 hover:bg-amber-500">
@@ -379,28 +379,28 @@ function LinkedAccountsList({ oauthAccounts }: { oauthAccounts: OauthAccount[] }
     };
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md">
-            <h3 className="text-lg font-medium text-white mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                 <LinkIcon size={20} className="text-blue-400" /> Bağlı Hesaplar
             </h3>
             <div className="space-y-4">
-                <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-800 bg-slate-950">
-                    <div className="bg-slate-800 p-3 rounded-full text-slate-300"><User size={24} /></div>
+                <div className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
+                    <div className="bg-gray-100 dark:bg-slate-800 p-3 rounded-full text-gray-700 dark:text-slate-300"><User size={24} /></div>
                     <div className="flex-1">
-                        <p className="text-slate-200 font-medium">E-Posta (Yerel Hesap)</p>
+                        <p className="text-gray-800 dark:text-slate-200 font-medium">E-Posta (Yerel Hesap)</p>
                         <p className="text-sm text-slate-500">{user.email}</p>
                     </div>
                     <span className="text-xs font-semibold bg-indigo-500/20 text-indigo-400 px-2.5 py-1 rounded">Ana Hesap</span>
                 </div>
                 {oauthAccounts && oauthAccounts.map(account => (
-                    <div key={account.id} className="flex items-center gap-4 p-4 rounded-xl border border-slate-800 bg-slate-950">
+                    <div key={account.id} className="flex items-center gap-4 p-4 rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950">
                         <div className="bg-white p-3 rounded-full">
                             <svg className="w-6 h-6 text-slate-800" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
                             </svg>
                         </div>
                         <div className="flex-1">
-                            <p className="text-slate-200 font-medium capitalize">{account.provider} ile Bağlı</p>
+                            <p className="text-gray-800 dark:text-slate-200 font-medium capitalize">{account.provider} ile Bağlı</p>
                             <p className="text-sm text-slate-500">Bağlantı Tarihi: {new Date(account.created_at).toLocaleDateString('tr-TR')}</p>
                         </div>
                         <DangerButton 
@@ -413,9 +413,9 @@ function LinkedAccountsList({ oauthAccounts }: { oauthAccounts: OauthAccount[] }
                     </div>
                 ))}
                 {(!oauthAccounts || oauthAccounts.length === 0) && (
-                    <div className="text-center p-6 border border-dashed border-slate-800 rounded-xl">
+                    <div className="text-center p-6 border border-dashed border-gray-200 dark:border-slate-800 rounded-xl">
                         <p className="text-sm text-slate-500">Başka bağlı hesap bulunmuyor.</p>
-                        <a href="/auth/google" className="mt-4 inline-flex items-center px-4 py-2 bg-white border border-transparent rounded-md font-semibold text-xs text-slate-800 uppercase tracking-widest hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <a href="/auth/google/redirect" className="mt-4 inline-flex items-center px-4 py-2 bg-white border border-transparent rounded-md font-semibold text-xs text-slate-800 uppercase tracking-widest hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                             <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.032-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
                             </svg>
@@ -463,9 +463,9 @@ function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
     };
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-md">
+        <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6 shadow-md">
             <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-medium text-white flex items-center gap-2">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
                     <Users size={20} className="text-purple-400" /> Çalışma Alanları
                 </h3>
                 <button
@@ -478,10 +478,10 @@ function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
 
             {/* Create Form */}
             {showCreate && (
-                <form onSubmit={handleCreate} className="mb-6 p-4 bg-slate-950 border border-slate-700 rounded-xl space-y-3">
+                <form onSubmit={handleCreate} className="mb-6 p-4 bg-gray-50 dark:bg-slate-950 border border-gray-300 dark:border-slate-700 rounded-xl space-y-3">
                     <TextInput
                         placeholder="Cüzdan adı (ör: Aile Cüzdanı)"
-                        className="block w-full bg-slate-900 border-slate-700 text-slate-100 focus:border-purple-500 focus:ring-purple-500"
+                        className="block w-full bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:border-purple-500 focus:ring-purple-500"
                         value={createForm.data.name}
                         onChange={(e) => createForm.setData('name', e.target.value)}
                         required
@@ -499,7 +499,7 @@ function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
             {/* Workspace List */}
             <div className="space-y-3">
                 {workspaces.length === 0 ? (
-                    <div className="text-center p-6 border border-dashed border-slate-800 rounded-xl">
+                    <div className="text-center p-6 border border-dashed border-gray-200 dark:border-slate-800 rounded-xl">
                         <p className="text-sm text-slate-500">Henüz bir çalışma alanı oluşturmadınız.</p>
                     </div>
                 ) : (
@@ -507,10 +507,10 @@ function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
                         <div key={ws.id} className={`flex items-center gap-4 p-4 rounded-xl border transition-colors ${
                             user.current_workspace_id === ws.id
                             ? 'border-purple-500/50 bg-purple-500/10'
-                            : 'border-slate-800 bg-slate-950 hover:bg-slate-800/50'
+                            : 'border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 hover:bg-gray-100 dark:bg-slate-800/50'
                         }`}>
                             <div className="flex-1">
-                                <p className={`font-medium ${user.current_workspace_id === ws.id ? 'text-purple-400' : 'text-slate-200'}`}>
+                                <p className={`font-medium ${user.current_workspace_id === ws.id ? 'text-purple-400' : 'text-gray-800 dark:text-slate-200'}`}>
                                     {ws.name}
                                 </p>
                                 <p className="text-xs text-slate-500 capitalize">Rol: {ws.pivot.role}</p>
@@ -520,7 +520,7 @@ function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
                             ) : (
                                 <button
                                     onClick={() => switchWorkspace(ws.id)}
-                                    className="text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                                    className="text-xs px-3 py-1.5 rounded-lg border border-gray-300 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:text-white hover:bg-gray-100 dark:bg-slate-800 transition-colors"
                                 >
                                     Geçiş Yap
                                 </button>
@@ -534,12 +534,12 @@ function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
             {workspaces.length > 0 && (
                 <div className="mt-6">
                     {showInvite ? (
-                        <form onSubmit={handleInvite} className="p-4 bg-slate-950 border border-slate-700 rounded-xl space-y-3">
+                        <form onSubmit={handleInvite} className="p-4 bg-gray-50 dark:bg-slate-950 border border-gray-300 dark:border-slate-700 rounded-xl space-y-3">
                             <div>
                                 <TextInput
                                     type="email"
                                     placeholder="E-posta adresi"
-                                    className="block w-full bg-slate-900 border-slate-700 text-slate-100 focus:border-purple-500 focus:ring-purple-500"
+                                    className="block w-full bg-white dark:bg-slate-900 border-gray-300 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:border-purple-500 focus:ring-purple-500"
                                     value={inviteForm.data.email}
                                     onChange={(e) => inviteForm.setData('email', e.target.value)}
                                     required
@@ -548,13 +548,13 @@ function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
                             </div>
                             <div className="flex gap-3">
                                 <label className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
-                                    inviteForm.data.role === 'editor' ? 'border-purple-500/50 bg-purple-500/10 text-purple-400' : 'border-slate-700 text-slate-400'
+                                    inviteForm.data.role === 'editor' ? 'border-purple-500/50 bg-purple-500/10 text-purple-400' : 'border-gray-300 dark:border-slate-700 text-gray-600 dark:text-slate-400'
                                 }`}>
                                     <input type="radio" checked={inviteForm.data.role === 'editor'} onChange={() => inviteForm.setData('role', 'editor')} className="text-purple-500" />
                                     <span className="text-sm">Editör</span>
                                 </label>
                                 <label className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
-                                    inviteForm.data.role === 'viewer' ? 'border-purple-500/50 bg-purple-500/10 text-purple-400' : 'border-slate-700 text-slate-400'
+                                    inviteForm.data.role === 'viewer' ? 'border-purple-500/50 bg-purple-500/10 text-purple-400' : 'border-gray-300 dark:border-slate-700 text-gray-600 dark:text-slate-400'
                                 }`}>
                                     <input type="radio" checked={inviteForm.data.role === 'viewer'} onChange={() => inviteForm.setData('role', 'viewer')} className="text-purple-500" />
                                     <span className="text-sm">İzleyici</span>
@@ -571,7 +571,7 @@ function WorkspacesSection({ workspaces }: { workspaces: WorkspaceData[] }) {
                     ) : (
                         <button
                             onClick={() => setShowInvite(true)}
-                            className="w-full text-sm px-4 py-3 rounded-xl border border-dashed border-slate-700 text-slate-400 hover:text-purple-400 hover:border-purple-500/30 transition-colors flex items-center justify-center gap-2"
+                            className="w-full text-sm px-4 py-3 rounded-xl border border-dashed border-gray-300 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:text-purple-400 hover:border-purple-500/30 transition-colors flex items-center justify-center gap-2"
                         >
                             <Mail size={16} /> Ortak Davet Et
                         </button>

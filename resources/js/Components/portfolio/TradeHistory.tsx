@@ -55,7 +55,6 @@ const TradeHistoryRow: React.FC<{ transaction: InvestmentTransaction }> = ({ tra
     const [showVoidModal, setShowVoidModal] = React.useState(false);
 
     const handleVoid = () => {
-        setData('reason', voidReason);
         post(route('investments.void', { id: transaction.id }), {
             onSuccess: () => setShowVoidModal(false),
         });
@@ -136,7 +135,7 @@ const TradeHistoryRow: React.FC<{ transaction: InvestmentTransaction }> = ({ tra
                                 <button
                                     onClick={handleVoid}
                                     disabled={processing || !data.reason}
-                                    className="px-3 py-1.5 text-xs bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-all"
+                                    className="px-3 py-1.5 text-xs bg-red-500 text-gray-900 dark:text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-all"
                                 >
                                     İptal Et
                                 </button>

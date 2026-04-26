@@ -41,7 +41,7 @@ export default function AccountPicker({ selectedId, onChange, error }: AccountPi
     };
 
     if (loading) {
-        return <div className="h-12 bg-slate-800 animate-pulse rounded-lg flex items-center px-4"><span className="text-xs text-slate-500">Hesaplar yükleniyor...</span></div>;
+        return <div className="h-12 bg-gray-100 dark:bg-slate-800 animate-pulse rounded-lg flex items-center px-4"><span className="text-xs text-slate-500">Hesaplar yükleniyor...</span></div>;
     }
 
     if (accounts.length === 0) {
@@ -65,14 +65,14 @@ export default function AccountPicker({ selectedId, onChange, error }: AccountPi
                             className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-colors ${
                                 isSelected 
                                 ? 'border-indigo-500 bg-indigo-500/10' 
-                                : 'border-slate-700 bg-slate-900 hover:bg-slate-800'
+                                : 'border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-gray-100 dark:bg-slate-800'
                             }`}
                         >
-                            <div className="shrink-0 bg-slate-800 p-2 rounded-lg">
+                            <div className="shrink-0 bg-gray-100 dark:bg-slate-800 p-2 rounded-lg">
                                 {getTypeIcon(account.type)}
                             </div>
                             <div className="truncate">
-                                <p className={`text-sm font-medium truncate ${isSelected ? 'text-indigo-400' : 'text-slate-200'}`}>
+                                <p className={`text-sm font-medium truncate ${isSelected ? 'text-indigo-400' : 'text-gray-800 dark:text-slate-200'}`}>
                                     {account.name}
                                 </p>
                                 <p className="text-xs text-slate-500">

@@ -65,12 +65,12 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
     };
 
     if (isLoading) {
-        return <div className="animate-pulse h-24 bg-slate-800/50 rounded-xl w-full"></div>;
+        return <div className="animate-pulse h-24 bg-gray-100 dark:bg-slate-800/50 rounded-xl w-full"></div>;
     }
 
     return (
         <div className="w-full">
-            <label className="block text-sm font-medium text-slate-300 mb-2">Kategori</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Kategori</label>
             
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                 {categories.map((cat) => (
@@ -81,18 +81,18 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
                         className={`select-none relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all ${
                             selectedId === cat.id 
                             ? 'bg-indigo-500/20 border-indigo-500 ring-1 ring-indigo-500' // Selected
-                            : 'bg-slate-900/50 border-slate-700 hover:bg-slate-800 hover:border-slate-600' // Default
+                            : 'bg-white dark:bg-slate-900/50 border-gray-300 dark:border-slate-700 hover:bg-gray-100 dark:bg-slate-800 hover:border-slate-600' // Default
                         }`}
                         style={{ boxShadow: selectedId === cat.id && cat.color ? `0 0 10px ${cat.color}40` : 'none' }}
                     >
                         <span className="text-2xl mb-1">{cat.icon}</span>
-                        <span className="text-xs font-medium text-slate-300 text-center truncate w-full" title={cat.name}>
+                        <span className="text-xs font-medium text-gray-700 dark:text-slate-300 text-center truncate w-full" title={cat.name}>
                             {cat.name}
                         </span>
                         
                         {selectedId === cat.id && (
                             <div className="absolute top-1 right-1 bg-indigo-500 rounded-full p-0.5">
-                                <Check size={10} className="text-white" />
+                                <Check size={10} className="text-gray-900 dark:text-white" />
                             </div>
                         )}
                     </button>
@@ -102,7 +102,7 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
                 <button
                     type="button"
                     onClick={() => setIsModalOpen(true)}
-                    className="select-none flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-slate-700 hover:border-slate-500 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 transition-colors"
+                    className="select-none flex flex-col items-center justify-center p-3 rounded-xl border border-dashed border-gray-300 dark:border-slate-700 hover:border-slate-500 hover:bg-gray-100 dark:bg-slate-800/50 text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:text-slate-200 transition-colors"
                 >
                     <Plus size={24} className="mb-1" />
                     <span className="text-xs font-medium text-center">Ekle</span>
@@ -111,8 +111,8 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
 
             {/* New Category Modal */}
             <Modal show={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <div className="p-6 bg-slate-900 border border-slate-800 rounded-lg">
-                    <h2 className="text-lg font-medium text-white mb-4">
+                <div className="p-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-lg">
+                    <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Yeni {direction === 'INCOME' ? 'Gelir' : 'Gider'} Kategorisi Oluştur
                     </h2>
                     
@@ -124,31 +124,31 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
 
                     <form onSubmit={handleCreate} className="flex flex-col gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Emoji / İkon</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Emoji / İkon</label>
                             <input 
                                 type="text"
                                 maxLength={2}
                                 value={newIcon}
                                 onChange={(e) => setNewIcon(e.target.value)}
-                                className="bg-slate-950 border border-slate-700 text-slate-200 text-xl rounded-xl block w-full p-3 h-14"
+                                className="bg-gray-50 dark:bg-slate-950 border border-gray-300 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-xl rounded-xl block w-full p-3 h-14"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Kategori Adı</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Kategori Adı</label>
                             <input 
                                 type="text"
                                 value={newName}
                                 onChange={(e) => setNewName(e.target.value)}
-                                className="bg-slate-950 border border-slate-700 text-slate-200 text-sm rounded-xl block w-full p-3 h-12"
+                                className="bg-gray-50 dark:bg-slate-950 border border-gray-300 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-sm rounded-xl block w-full p-3 h-12"
                                 placeholder="Örn: Market"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-300 mb-1">Renk</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Renk</label>
                             <div className="flex gap-2 items-center">
                                 <input 
                                     type="color"
@@ -164,14 +164,14 @@ export default function CategoryPicker({ direction, selectedId, onChange }: Cate
                             <button
                                 type="button"
                                 onClick={() => setIsModalOpen(false)}
-                                className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
+                                className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:text-white transition-colors"
                             >
                                 İptal
                             </button>
                             <button
                                 type="submit"
                                 disabled={createMutation.isPending}
-                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium disabled:opacity-70 transition-colors"
+                                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-gray-900 dark:text-white rounded-lg text-sm font-medium disabled:opacity-70 transition-colors"
                             >
                                 {createMutation.isPending ? 'Oluşturuluyor...' : 'Oluştur'}
                             </button>

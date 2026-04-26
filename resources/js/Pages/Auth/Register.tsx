@@ -54,14 +54,14 @@ export default function Register() {
             <Head title="Kayıt Ol" />
 
             <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2 tracking-tight">Hesap Oluştur</h1>
-                <p className="text-sm text-slate-400">Finanslarınızı kontrol altına alın</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">Hesap Oluştur</h1>
+                <p className="text-sm text-gray-600 dark:text-slate-400">Finanslarınızı kontrol altına alın</p>
             </div>
 
             <form onSubmit={submit} className="flex flex-col gap-5">
                 {/* Display Name */}
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="display_name">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1" htmlFor="display_name">
                         Ad Soyad
                     </label>
                     <div className="relative">
@@ -73,7 +73,7 @@ export default function Register() {
                             type="text"
                             value={data.display_name}
                             onChange={(e) => setData('display_name', e.target.value)}
-                            className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
+                            className="bg-white dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
                             placeholder="Akif Cebe"
                             required
                         />
@@ -83,7 +83,7 @@ export default function Register() {
 
                 {/* Email */}
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="email">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1" htmlFor="email">
                         E-posta Adresi
                     </label>
                     <div className="relative">
@@ -95,7 +95,7 @@ export default function Register() {
                             type="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
+                            className="bg-white dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
                             placeholder="ornek@snuzdan.test"
                             required
                         />
@@ -105,7 +105,7 @@ export default function Register() {
 
                 {/* Password */}
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="password">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1" htmlFor="password">
                         Şifre
                     </label>
                     <div className="relative">
@@ -117,14 +117,14 @@ export default function Register() {
                             type={showPassword ? 'text' : 'password'}
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
-                            className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-10 p-3 transition-shadow"
+                            className="bg-white dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 pr-10 p-3 transition-shadow"
                             placeholder="••••••••"
                             required
                         />
                         <button
                             type="button"
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-300 transition-colors"
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-gray-700 dark:text-slate-300 transition-colors"
                         >
                             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                         </button>
@@ -134,7 +134,7 @@ export default function Register() {
 
                 {/* Password Confirmation */}
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1" htmlFor="password_confirmation">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1" htmlFor="password_confirmation">
                         Şifre Tekrar
                     </label>
                     <div className="relative">
@@ -146,7 +146,7 @@ export default function Register() {
                             type={showPassword ? 'text' : 'password'}
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
-                            className="bg-slate-900/50 border border-slate-700 text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
+                            className="bg-white dark:bg-slate-900/50 border border-gray-300 dark:border-slate-700 text-gray-800 dark:text-slate-200 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-3 transition-shadow"
                             placeholder="••••••••"
                             required
                         />
@@ -157,7 +157,7 @@ export default function Register() {
                 <button
                     disabled={processing}
                     type="submit"
-                    className="w-full mt-2 text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                    className="w-full mt-2 text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
                 >
                     {processing ? (
                         <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -168,7 +168,7 @@ export default function Register() {
                     )}
                 </button>
 
-                <p className="text-sm text-center text-slate-400 mt-2">
+                <p className="text-sm text-center text-gray-600 dark:text-slate-400 mt-2">
                     Zaten hesabınız var mı?{' '}
                     <Link href={route('login')} className="font-medium text-indigo-400 hover:text-indigo-300 underline underline-offset-2">
                         Giriş Yapın

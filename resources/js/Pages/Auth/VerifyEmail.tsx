@@ -19,8 +19,8 @@ export default function VerifyEmail({ status }: { status?: string }) {
                 <div className="mx-auto w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-4">
                     <MailCheck size={32} className="text-indigo-400" />
                 </div>
-                <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">E-postanızı Doğrulayın</h1>
-                <p className="text-sm text-slate-400 leading-relaxed max-w-sm mx-auto">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">E-postanızı Doğrulayın</h1>
+                <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed max-w-sm mx-auto">
                     Kayıt olduğunuz e-posta adresine bir doğrulama bağlantısı gönderdik.
                     Lütfen gelen kutunuzu kontrol edin.
                 </p>
@@ -36,7 +36,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
                 <button
                     disabled={processing}
                     type="submit"
-                    className="w-full text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
+                    className="w-full text-gray-900 dark:text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 shadow-lg shadow-indigo-500/30 font-medium rounded-xl text-sm px-5 py-3 text-center flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
                 >
                     {processing ? (
                         <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -51,7 +51,7 @@ export default function VerifyEmail({ status }: { status?: string }) {
                     href={route('logout')}
                     method="post"
                     as="button"
-                    className="w-full text-slate-400 hover:text-slate-300 text-sm text-center py-2 transition-colors"
+                    className="w-full text-gray-600 dark:text-slate-400 hover:text-gray-700 dark:text-slate-300 text-sm text-center py-2 transition-colors"
                 >
                     Çıkış Yap
                 </Link>

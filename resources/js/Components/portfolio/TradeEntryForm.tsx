@@ -93,7 +93,7 @@ const TradeEntryForm: React.FC<TradeEntryFormProps> = ({ isOpen, onClose }) => {
                             onClick={() => setData('side', 'BUY')}
                             className={`flex-1 py-2.5 rounded-md text-sm font-semibold transition-all ${
                                 data.side === 'BUY'
-                                    ? 'bg-emerald-500 text-white shadow-sm'
+                                    ? 'bg-emerald-500 text-gray-900 dark:text-white shadow-sm'
                                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
                             }`}
                         >
@@ -104,7 +104,7 @@ const TradeEntryForm: React.FC<TradeEntryFormProps> = ({ isOpen, onClose }) => {
                             onClick={() => setData('side', 'SELL')}
                             className={`flex-1 py-2.5 rounded-md text-sm font-semibold transition-all ${
                                 data.side === 'SELL'
-                                    ? 'bg-red-500 text-white shadow-sm'
+                                    ? 'bg-red-500 text-gray-900 dark:text-white shadow-sm'
                                     : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
                             }`}
                         >
@@ -222,7 +222,7 @@ const TradeEntryForm: React.FC<TradeEntryFormProps> = ({ isOpen, onClose }) => {
                     <button
                         type="submit"
                         disabled={processing}
-                        className={`w-full py-3 rounded-lg text-white font-semibold text-sm transition-all ${
+                        className={`w-full py-3 rounded-lg text-gray-900 dark:text-white font-semibold text-sm transition-all ${
                             data.side === 'BUY'
                                 ? 'bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300'
                                 : 'bg-red-500 hover:bg-red-600 disabled:bg-red-300'
