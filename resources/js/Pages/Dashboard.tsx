@@ -14,10 +14,12 @@ export default function Dashboard() {
         queryFn: async () => {
             const { data } = await axios.get('/api/dashboard/summary');
             return data;
-        }
+        },
+        staleTime: 60 * 1000,      // 60 saniye boyunca "fresh" sayılır
+        gcTime: 5 * 60 * 1000,     // 5 dakika cache'te kalır
     });
 
-    // 2. Portföy Özeti (Muhammed'in API'sinden)
+    // 2. Portföy Özeti
     const { data: portfolio } = useQuery({
         queryKey: ['portfolio-summary'],
         queryFn: async () => {
@@ -27,7 +29,9 @@ export default function Dashboard() {
             } catch {
                 return { total_value: 0, total_profit: 0, profit_percentage: 0 };
             }
-        }
+        },
+        staleTime: 60 * 1000,
+        gcTime: 5 * 60 * 1000,
     });
 
     // 3. Son İşlemler (Karma Feed)
@@ -36,7 +40,9 @@ export default function Dashboard() {
         queryFn: async () => {
             const { data } = await axios.get('/api/dashboard/activities');
             return data;
-        }
+        },
+        staleTime: 30 * 1000,      // Aktiviteler daha sık değişebilir
+        gcTime: 5 * 60 * 1000,
     });
 
     // Toplam Net Varlık (Kasa/Banka bakiyesi = Tüm Gelir - Tüm Gider. Şimdilik aylık bakiyeyi alıyoruz ama genelde tüm zamanlar istenir)

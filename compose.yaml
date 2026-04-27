@@ -17,8 +17,9 @@ services:
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
             IGNITION_LOCAL_SITES_PATH: '${PWD}'
+            PHP_OPCACHE_VALIDATE_TIMESTAMPS: 0
         volumes:
-            - '.:/var/www/html'
+            - '.:/var/www/html:delegated'
         networks:
             - sail
         depends_on:
@@ -103,7 +104,7 @@ services:
         ports:
             - '16543:80'
         environment:
-            PGADMIN_DEFAULT_EMAIL: 'admin@snuzdan.test'
+            PGADMIN_DEFAULT_EMAIL: 'admin@snuzdan.com'
             PGADMIN_DEFAULT_PASSWORD: 'password'
         networks:
             - sail

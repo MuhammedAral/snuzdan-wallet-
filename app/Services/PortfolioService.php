@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Asset;
 use App\Models\InvestmentTransaction;
+use App\Models\PriceSnapshot;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -41,17 +44,32 @@ class PortfolioService
             ->where('net_quantity', '>', 0) // Sadece açık pozisyonlar
             ->get();
 
-        return $positions->map(function ($position) {
-            // Anlık fiyatı çek
-            $asset = \App\Models\Asset::find($position->asset_id);
-            $currentPrice = 0;
+        if ($positions->isEmpty()) {
+            return collect();
+        }
 
-            try {
-                $currentPrice = $asset ? $this->priceService->getLatestPrice($asset) : 0;
-            } catch (\Exception $e) {
-                Log::warning("Pozisyon fiyatı alınamadı: {$position->symbol}", [
-                    'error' => $e->getMessage(),
-                ]);
+        // N+1 Fix: Tüm asset'leri tek sorguda çek
+        $assetIds = $positions->pluck('asset_id')->unique()->values()->all();
+        $assetsMap = Asset::whereIn('id', $assetIds)
+            ->get()
+            ->keyBy('id');
+
+        // N+1 Fix: Tüm son fiyatları tek sorguda çek (her asset için en son snapshot)
+        $priceMap = $this->getBulkLatestPrices($assetIds);
+
+        return $positions->map(function ($position) use ($assetsMap, $priceMap) {
+            $asset = $assetsMap->get($position->asset_id);
+            $currentPrice = $priceMap[$position->asset_id] ?? 0;
+
+            // Cache'te yoksa canlı çekmeyi dene (tek tek, zaten az sayıda)
+            if ($currentPrice === 0 && $asset) {
+                try {
+                    $currentPrice = $this->priceService->getLatestPrice($asset);
+                } catch (\Exception $e) {
+                    Log::warning("Pozisyon fiyatı alınamadı: {$position->symbol}", [
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
 
             // Ortalama maliyet hesapla
@@ -84,6 +102,46 @@ class PortfolioService
                 'trade_count'             => (int) $position->trade_count,
             ];
         });
+    }
+
+    /**
+     * Birden fazla asset için son fiyatları tek sorguda çek.
+     *
+     * Önce Redis cache'e bakar, cache'te olmayan asset'ler için
+     * DB'den tek bir DISTINCT ON sorgusu ile son snapshot'ları alır.
+     *
+     * @param array $assetIds
+     * @return array  ['asset_id' => float price]
+     */
+    private function getBulkLatestPrices(array $assetIds): array
+    {
+        $priceMap = [];
+        $missingIds = [];
+
+        // 1. Önce Redis cache'e bak
+        foreach ($assetIds as $id) {
+            $cached = Cache::get("price:{$id}");
+            if ($cached !== null) {
+                $priceMap[$id] = (float) $cached;
+            } else {
+                $missingIds[] = $id;
+            }
+        }
+
+        // 2. Cache'te olmayan asset'ler için DB sorgusu
+        if (!empty($missingIds)) {
+            $snapshots = \App\Models\PriceSnapshot::whereIn('asset_id', $missingIds)
+                ->orderByDesc('fetched_at')
+                ->get()
+                ->unique('asset_id');
+
+            foreach ($snapshots as $snap) {
+                $priceMap[$snap->asset_id] = (float) $snap->price;
+                Cache::put("price:{$snap->asset_id}", $snap->price, 60);
+            }
+        }
+
+        return $priceMap;
     }
 
     /**
@@ -168,12 +226,9 @@ class PortfolioService
 
         $totalUnrealizedPnl = $positions->sum('unrealized_pnl');
 
-        // Toplam realized PnL (tüm asset'ler için)
-        $totalRealizedPnl = 0;
-        $assetIds = $positions->pluck('asset_id')->unique();
-        foreach ($assetIds as $assetId) {
-            $totalRealizedPnl += $this->getFifoPnL($user, $assetId);
-        }
+        // N+1 Fix: Tüm asset işlemlerini tek sorguda çek, sonra PHP'de FIFO hesapla
+        $assetIds = $positions->pluck('asset_id')->unique()->values()->all();
+        $totalRealizedPnl = $this->getBulkFifoPnL($user, $assetIds);
 
         // Asset class dağılımı (%)
         $allocation = [];
@@ -194,6 +249,75 @@ class PortfolioService
             'allocation'         => $allocation,
             'position_count'     => $positions->count(),
         ];
+    }
+
+    /**
+     * Birden fazla asset için FIFO PnL'i tek DB sorgusunda hesapla.
+     *
+     * Tüm workspace işlemlerini tek sorguda çeker ve PHP'de asset'e göre gruplayarak
+     * FIFO hesaplamasını yapar. N ayrı sorgu yerine 1 sorgu.
+     *
+     * @param User  $user
+     * @param array $assetIds
+     * @return float Toplam realized PnL
+     */
+    private function getBulkFifoPnL(User $user, array $assetIds): float
+    {
+        if (empty($assetIds)) {
+            return 0.0;
+        }
+
+        // Tek sorguda tüm işlemleri al
+        $allTransactions = InvestmentTransaction::where('workspace_id', $user->current_workspace_id)
+            ->whereIn('asset_id', $assetIds)
+            ->where('is_void', false)
+            ->orderBy('transaction_date')
+            ->orderBy('created_at')
+            ->get()
+            ->groupBy('asset_id');
+
+        $totalRealizedPnl = 0;
+
+        foreach ($allTransactions as $assetId => $transactions) {
+            $buyQueue = [];
+            $realizedPnl = 0;
+
+            foreach ($transactions as $tx) {
+                if ($tx->side === 'BUY') {
+                    $buyQueue[] = [
+                        'quantity' => $tx->quantity,
+                        'price'    => $tx->unit_price,
+                        'fx_rate'  => $tx->fx_rate_to_base,
+                    ];
+                } elseif ($tx->side === 'SELL') {
+                    $remainingToSell = $tx->quantity;
+                    $sellPriceBase = $tx->unit_price * $tx->fx_rate_to_base;
+
+                    while ($remainingToSell > 0 && !empty($buyQueue)) {
+                        $oldestBuy = &$buyQueue[0];
+                        $buyPriceBase = $oldestBuy['price'] * $oldestBuy['fx_rate'];
+
+                        if ($oldestBuy['quantity'] <= $remainingToSell) {
+                            $soldQty = $oldestBuy['quantity'];
+                            $realizedPnl += ($sellPriceBase - $buyPriceBase) * $soldQty;
+                            $remainingToSell -= $soldQty;
+                            array_shift($buyQueue);
+                        } else {
+                            $soldQty = $remainingToSell;
+                            $realizedPnl += ($sellPriceBase - $buyPriceBase) * $soldQty;
+                            $oldestBuy['quantity'] -= $soldQty;
+                            $remainingToSell = 0;
+                        }
+                    }
+
+                    $realizedPnl -= $tx->commission * $tx->fx_rate_to_base;
+                }
+            }
+
+            $totalRealizedPnl += $realizedPnl;
+        }
+
+        return round($totalRealizedPnl, 2);
     }
 
     /**

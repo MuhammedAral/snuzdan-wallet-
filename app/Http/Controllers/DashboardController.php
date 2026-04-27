@@ -29,7 +29,7 @@ class DashboardController extends Controller
 
         if (!$workspaceId) {
             return response()->json([
-                'monthly_income' => 0,
+                'monthly_income'  => 0,
                 'monthly_expense' => 0,
                 'monthly_balance' => 0,
             ]);
@@ -37,7 +37,7 @@ class DashboardController extends Controller
 
         $currentMonth = date('Y-m');
 
-        // İşlemleri çek (Kurları hesaplamak için koleksiyon alıyoruz)
+        // İşlemleri çek
         $expenses = ExpenseTransaction::where('workspace_id', $workspaceId)
             ->active()
             ->whereRaw("TO_CHAR(expense_date, 'YYYY-MM') = ?", [$currentMonth])
@@ -48,20 +48,30 @@ class DashboardController extends Controller
             ->whereRaw("TO_CHAR(income_date, 'YYYY-MM') = ?", [$currentMonth])
             ->get();
 
+        // N+1 Fix: Kullanılan tüm para birimlerini topla, tek sorguda FX kurörini al
+        $currencies = $expenses->pluck('currency')
+            ->merge($incomes->pluck('currency'))
+            ->unique()
+            ->reject(fn($c) => $c === 'TRY')
+            ->values()
+            ->all();
+
+        $rateMap = $this->prefetchFxRates($currencies);
+
         $totalExpense = 0;
         foreach ($expenses as $exp) {
-            $totalExpense += $this->convertToTry($exp->amount, $exp->currency);
+            $totalExpense += $this->convertToTry($exp->amount, $exp->currency, $rateMap);
         }
 
         $totalIncome = 0;
         foreach ($incomes as $inc) {
-            $totalIncome += $this->convertToTry($inc->amount, $inc->currency);
+            $totalIncome += $this->convertToTry($inc->amount, $inc->currency, $rateMap);
         }
 
         return response()->json([
-            'monthly_income' => (float) $totalIncome,
+            'monthly_income'  => (float) $totalIncome,
             'monthly_expense' => (float) $totalExpense,
-            'monthly_balance' => (float) ($totalIncome - $totalExpense)
+            'monthly_balance' => (float) ($totalIncome - $totalExpense),
         ]);
     }
 
@@ -121,28 +131,56 @@ class DashboardController extends Controller
     }
 
     /**
-     * Convert an amount to TRY based on latest FxRateSnapshot or fallback.
+     * Convert an amount to TRY using a prefetched rate map.
+     *
+     * @param float  $amount
+     * @param string $currency
+     * @param array  $rateMap  ['USD' => 32.50, ...]
      */
-    private function convertToTry($amount, $currency)
+    private function convertToTry($amount, $currency, array $rateMap = []): float
     {
         if ($currency === 'TRY') {
             return (float) $amount;
         }
 
-        $rateRecord = \App\Models\FxRateSnapshot::where('base_currency', $currency)
-            ->where('quote_currency', 'TRY')
-            ->orderByDesc('fetched_at')
-            ->first();
-
-        // Fallbacks
+        // Fallback rates
         $fallbackRates = [
             'USD' => 32.50,
             'EUR' => 35.00,
-            'GBP' => 40.50
+            'GBP' => 40.50,
         ];
 
-        $rate = $rateRecord ? $rateRecord->rate : ($fallbackRates[$currency] ?? 1.0);
+        $rate = $rateMap[$currency] ?? $fallbackRates[$currency] ?? 1.0;
 
         return (float) $amount * $rate;
+    }
+
+    /**
+     * Verilen para birimlerinin TRY kurlarını tek DB sorgusunda çek.
+     *
+     * @param array $currencies  ['USD', 'EUR', ...]
+     * @return array             ['USD' => 32.50, ...]
+     */
+    private function prefetchFxRates(array $currencies): array
+    {
+        if (empty($currencies)) {
+            return [];
+        }
+
+        $records = \App\Models\FxRateSnapshot::whereIn('base_currency', $currencies)
+            ->where('quote_currency', 'TRY')
+            ->orderByDesc('fetched_at')
+            ->get()
+            ->unique('base_currency') // Her para birimi için en son kuru al
+            ->keyBy('base_currency');
+
+        $rateMap = [];
+        foreach ($currencies as $currency) {
+            if (isset($records[$currency])) {
+                $rateMap[$currency] = (float) $records[$currency]->rate;
+            }
+        }
+
+        return $rateMap;
     }
 }

@@ -100,8 +100,9 @@ export default function ExpensesIndex() {
             setCurrency(parsed.currency || 'TRY');
             setExpenseDate(parsed.date ? new Date(parsed.date) : new Date());
             setNotes(parsed.note || '');
-            // Not: category_name geldi, kullanıcı CategoryPicker'dan eliyle seçmeli ya da API otomatik backend'de eşleştirmeli. Şimdilik not olarak basıyoruz.
-            if(parsed.category_name) {
+            if (parsed.category_id) {
+                setCategoryId(parsed.category_id);
+            } else if (parsed.category_name) {
                 setNotes(prev => (prev ? prev + ' | ' : '') + `AI Kategori Önerisi: ${parsed.category_name}`);
             }
         } else {

@@ -27,14 +27,21 @@ class AiService
             return null;
         }
 
+        $categories = \App\Models\Category::all(['id', 'name', 'direction'])
+            ->map(fn($c) => "{$c->name} (ID: {$c->id}, Tip: {$c->direction})")
+            ->implode(', ');
+
         $prompt = "Sen bir finans asistanısın. Kullanıcının harcama/gelir bilgisini ayrıştırıp SADECE JSON formatında dönmen gerekiyor. Asla markdown veya ekstra yazı kullanma, direk { ile başla.
 Girdi: \"{$userText}\"
+Mevcut Kategoriler: {$categories}
+
 Beklenen JSON Şeması:
 {
   \"type\": \"EXPENSE\" VEYA \"INCOME\",
   \"amount\": float (örnek 150.50),
   \"currency\": \"TRY\", \"USD\", \"EUR\" (varsayılan TRY),
-  \"category_name\": \"En uygun kategori ismi kısa (örnek Yemek, Market)\",
+  \"category_id\": \"Mevcut kategorilerden işleme en uygun olanın ID'si. Hiçbiri uymuyorsa null bırak.\",
+  \"category_name\": \"Eğer category_id null ise, senin önereceğin kısa bir kategori ismi.\",
   \"date\": \"YYYY-MM-DD\" (bugünün tarihini baz al, şu an: " . date('Y-m-d') . "),
   \"note\": \"Orijinal cümleden damıtılmış mantıklı bir tek satır not\"
 }";
