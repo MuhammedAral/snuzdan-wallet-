@@ -90,10 +90,10 @@ const TradeHistoryRow: React.FC<{ transaction: InvestmentTransaction }> = ({ tra
                     {formatNum(transaction.quantity, 4)}
                 </td>
                 <td className="py-3 px-4 text-right font-mono text-gray-900 dark:text-white">
-                    ${formatNum(transaction.unit_price)}
+                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(transaction.unit_price)}
                 </td>
                 <td className="py-3 px-4 text-right font-mono font-medium text-gray-900 dark:text-white">
-                    ${formatNum(transaction.total_amount)}
+                    {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(transaction.total_amount)}
                 </td>
                 <td className="py-3 px-4 text-right">
                     {!isVoid && (

@@ -118,7 +118,7 @@ export default function Index({ positions = [], summary, transactions }: Portfol
                                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Toplam Portföy Değeri</p>
                                     <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                                        ${formatCurrency(summary?.total_value ?? 0)}
+                                        {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(summary?.total_value ?? 0)}
                                     </p>
                                     <p className="text-xs text-gray-400 mt-1">
                                         {summary?.position_count ?? 0} açık pozisyon
@@ -129,7 +129,7 @@ export default function Index({ positions = [], summary, transactions }: Portfol
                                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Gerçekleşmemiş K/Z</p>
                                     <p className={`text-2xl font-bold ${isProfitable ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {isProfitable ? '+' : ''}${formatCurrency(summary?.total_unrealized ?? 0)}
+                                        {isProfitable ? '+' : ''}{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(summary?.total_unrealized ?? 0)}
                                     </p>
                                     <p className="text-xs text-gray-400 mt-1">Açık pozisyonlar</p>
                                 </div>
@@ -138,7 +138,7 @@ export default function Index({ positions = [], summary, transactions }: Portfol
                                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
                                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Gerçekleşmiş K/Z (FIFO)</p>
                                     <p className={`text-2xl font-bold ${(summary?.total_realized ?? 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                        {(summary?.total_realized ?? 0) >= 0 ? '+' : ''}${formatCurrency(summary?.total_realized ?? 0)}
+                                        {(summary?.total_realized ?? 0) >= 0 ? '+' : ''}{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(summary?.total_realized ?? 0)}
                                     </p>
                                     <p className="text-xs text-gray-400 mt-1">Kapatılan pozisyonlar</p>
                                 </div>

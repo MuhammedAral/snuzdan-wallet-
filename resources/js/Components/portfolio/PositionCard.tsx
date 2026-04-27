@@ -66,7 +66,7 @@ const PositionCard: React.FC<PositionCardProps> = ({ position }) => {
                 <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Ort. Maliyet</p>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        ${formatCurrency(position.avg_cost)}
+                        {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(position.avg_cost)}
                     </p>
                 </div>
                 <div>
@@ -81,7 +81,7 @@ const PositionCard: React.FC<PositionCardProps> = ({ position }) => {
                 <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Toplam Değer</p>
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        ${formatCurrency(position.current_price * position.net_quantity)}
+                        {new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(position.current_price * position.net_quantity)}
                     </p>
                 </div>
             </div>
@@ -91,7 +91,7 @@ const PositionCard: React.FC<PositionCardProps> = ({ position }) => {
                 <span className="text-xs text-gray-500 dark:text-gray-400">Unrealized PnL</span>
                 <div className="flex items-center gap-2">
                     <span className={`text-sm font-semibold ${isProfitable ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {isProfitable ? '+' : ''}{formatCurrency(position.unrealized_pnl)}
+                        {isProfitable ? '+' : ''}{new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(position.unrealized_pnl)}
                     </span>
                     <span className={`text-xs px-1.5 py-0.5 rounded ${isProfitable ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                         {isProfitable ? '▲' : '▼'} {Math.abs(position.unrealized_pnl_percent).toFixed(2)}%
